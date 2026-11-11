@@ -81,3 +81,18 @@ Choices made where the plan was open or unclear. Each one takes the simpler opti
   Wave's bar width now follows the screen width. Mood loads its gradient from its own folder.
 - Tape and Depth stay in the kit, off by default, until the owner decides (open decision 3).
 - The wake reveal line is the placeholder `WELCOME BACK` until the owner picks the wording (open decision 1).
+
+## M5 configurator and schema tests
+
+- `site/` is static: index.html, style.css, app.js, schema.js and a generated data.js (schema, example,
+  themes and sample data copied verbatim by `tools/build-site-data.ps1`; `-Check` fails if it is stale).
+  A Content-Security-Policy blocks every connection; no fonts, scripts or images load from anywhere else.
+- The site validator mirrors the PowerShell one. Both run the same 18 fixtures in `tests/fixtures`
+  (`tests/schema.tests.ps1`, `node tests/site.test.mjs`): all pass.
+- Checked in a browser over a local 127.0.0.1 server (stopped afterwards): at 375 px
+  scrollWidth equals clientWidth (no horizontal scroll), no control under 44 px tall, no console errors,
+  only same-origin requests. An invalid refresh value disables Download and names the field; Import accepts a
+  valid file and refuses one with an unknown field. Screenshot at 1440 looked right. The headless 390 px
+  screenshot was clipped by headless Chrome's minimum window width, so 390 px was judged by the in-page check
+  at 375 px instead.
+- Download itself (the browser save dialog) was not exercised end to end; the Blob path ran without errors.

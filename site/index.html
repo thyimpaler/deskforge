@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>deskforge configurator</title>
+<meta name="description" content="Pick a theme and widgets for a Windows desk and export desk.json. Runs in your browser only.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<a class="skip" href="#controls">Skip to settings</a>
+
+<header class="top">
+  <p class="eyebrow">deskforge / configurator</p>
+  <h1>Build the desk.<br>Export one file.</h1>
+  <p class="lede">Choose a theme and what sits on your Windows desktop. The page writes <code>desk.json</code>. Hand it to your coding agent, or copy it to <code>config\desk.json</code>, and run the dry run. Nothing here touches your PC or calls any server.</p>
+</header>
+
+<main class="layout">
+  <section class="preview-col" aria-label="Preview">
+    <div class="sticky">
+      <div class="stage" id="stage" role="img" aria-label="Preview of the desk with sample data">
+        <div class="desk" id="desk"></div>
+      </div>
+      <p class="note">Preview with made-up sample data. Fonts fall back to what your browser has.</p>
+
+      <div class="export">
+        <div class="status" id="status" role="status" aria-live="polite"></div>
+        <div class="buttons">
+          <button type="button" class="btn primary" id="download">Download desk.json</button>
+          <button type="button" class="btn" id="copy">Copy</button>
+          <label class="btn file">Import<input type="file" id="import" accept=".json,application/json"></label>
+          <button type="button" class="btn ghost" id="reset">Reset</button>
+        </div>
+        <ul class="errors" id="errors"></ul>
+        <details class="json">
+          <summary>Show the file</summary>
+          <pre id="json" tabindex="0"></pre>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <form class="controls" id="controls" autocomplete="off" novalidate>
+    <ol class="steps">
+      <li class="step">
+        <h2><span class="n">01</span>Theme</h2>
+        <div class="themes" id="themes" role="radiogroup" aria-label="Theme"></div>
+      </li>
+
+      <li class="step">
+        <h2><span class="n">02</span>Place</h2>
+        <p class="hint">The city is a label. Weather comes from the coordinates, sent only to Open-Meteo by the panel.</p>
+        <div class="grid3">
+          <label class="field wide">City<input id="city" maxlength="40"></label>
+          <label class="field">Latitude<input id="latitude" inputmode="decimal"></label>
+          <label class="field">Longitude<input id="longitude" inputmode="decimal"></label>
+        </div>
+        <fieldset class="seg"><legend>Units</legend>
+          <label><input type="radio" name="units" value="c"><span>Celsius, km/h</span></label>
+          <label><input type="radio" name="units" value="f"><span>Fahrenheit, mph</span></label>
+        </fieldset>
+      </li>
+
+      <li class="step">
+        <h2><span class="n">03</span>Prices</h2>
+        <p class="hint">One or two CoinGecko ids, for example bitcoin, ethereum, solana.</p>
+        <div class="grid3">
+          <label class="field">Coin 1<input id="coin1" spellcheck="false"></label>
+          <label class="field">Coin 2 (optional)<input id="coin2" spellcheck="false"></label>
+          <label class="field">Refresh, seconds<input id="refresh" inputmode="numeric"></label>
+        </div>
+      </li>
+
+      <li class="step">
+        <h2><span class="n">04</span>Clock and dock</h2>
+        <fieldset class="seg"><legend>Clock</legend>
+          <label><input type="radio" name="clock" value="24"><span>24 hour</span></label>
+          <label><input type="radio" name="clock" value="12"><span>12 hour</span></label>
+        </fieldset>
+        <fieldset class="seg"><legend>Dock</legend>
+          <label><input type="radio" name="dock" value="bottom"><span>Bottom</span></label>
+          <label><input type="radio" name="dock" value="top"><span>Top</span></label>
+        </fieldset>
+      </li>
+
+      <li class="step">
+        <h2><span class="n">05</span>Skins</h2>
+        <ul class="toggles" id="skins"></ul>
+      </li>
+
+      <li class="step">
+        <h2><span class="n">06</span>Addons</h2>
+        <p class="hint">Off by default. Tape, Depth and Wave cost more CPU.</p>
+        <ul class="toggles" id="addons"></ul>
+      </li>
+
+      <li class="step">
+        <h2><span class="n">07</span>Wake reveal</h2>
+        <p class="hint">A 3 second reveal after sign-in, unlock or wake. Letters, digits and simple punctuation.</p>
+        <ul class="toggles"><li><label class="toggle"><input type="checkbox" id="wakeOn"><span>Play the reveal</span></label></li></ul>
+        <label class="field wide">Reveal line<input id="wakeText" maxlength="40"></label>
+      </li>
+
+      <li class="step">
+        <h2><span class="n">08</span>Home apps</h2>
+        <p class="hint">Up to 12. The first 10 are pinned on the dock. A path is an .exe, a folder, or a shell: or ms-settings: link.</p>
+        <ol class="apps" id="apps"></ol>
+        <button type="button" class="btn" id="addApp">Add an app</button>
+      </li>
+
+      <li class="step">
+        <h2><span class="n">09</span>Startup</h2>
+        <ul class="toggles"><li><label class="toggle"><input type="checkbox" id="startup"><span>Start the desk at sign-in (adds one value under HKCU Run)</span></label></li></ul>
+      </li>
+    </ol>
+  </form>
+</main>
+
+<footer class="foot">
+  <p>No server, no cookies, no analytics, no network requests. MIT licence.</p>
+</footer>
+
+<script src="data.js"></script>
+<script src="schema.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

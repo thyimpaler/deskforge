@@ -1,0 +1,60 @@
+{
+  "expect": "valid",
+  "mustMention": "",
+  "config": {
+      "schemaVersion":  1,
+      "theme":  "red-on-black",
+      "city":  "London",
+      "latitude":  51.51,
+      "longitude":  -0.13,
+      "units":  "c",
+      "clock":  "24",
+      "coins":  [
+                    "bitcoin",
+                    "ethereum"
+                ],
+      "dock":  "bottom",
+      "skins":  {
+                    "panel":  true,
+                    "now":  true,
+                    "dock":  true,
+                    "home":  true,
+                    "boot":  true
+                },
+      "addons":  {
+                     "tape":  false,
+                     "depth":  false,
+                     "wave":  false,
+                     "mood":  false,
+                     "alert":  false
+                 },
+      "wakeReveal":  {
+                         "enabled":  true,
+                         "text":  "WELCOME BACK"
+                     },
+      "refreshSeconds":  60,
+      "startup":  false,
+      "homeApps":  [
+                       {
+                           "name":  "Files",
+                           "path":  "explorer.exe"
+                       },
+                       {
+                           "name":  "Notepad",
+                           "path":  "notepad.exe"
+                       },
+                       {
+                           "name":  "Terminal",
+                           "path":  "wt.exe"
+                       },
+                       {
+                           "name":  "Settings",
+                           "path":  "ms-settings:"
+                       },
+                       {
+                           "name":  "Task Manager",
+                           "path":  "taskmgr.exe"
+                       }
+                   ]
+  }
+}
