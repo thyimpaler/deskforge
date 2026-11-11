@@ -14,7 +14,7 @@ Off by default.
 
 ## Data and privacy
 
-None. It reads the sound your speakers play through the AudioLevel plugin that ships with Rainmeter.
+Nothing leaves the PC. Wave reads the sound your speakers or headphones are playing, through loopback on the output device (the AudioLevel plugin that ships with Rainmeter, `Port=Output`). It does not open the microphone, and it keeps nothing: each 40 ms reading only sets the bar heights and is then gone.
 
 ## CPU cost
 

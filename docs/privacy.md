@@ -15,5 +15,8 @@ Each host sees your IP address, as with any web request. Nothing else leaves the
 dock helpers read window titles on your PC only and never send them anywhere. There is no camera, microphone
 recording or keyboard hook.
 
+The Wave addon listens to speaker output through loopback, not to the microphone: it reads the levels of the
+sound the PC is already playing, to draw the bars, and stores and sends nothing.
+
 The repo itself was built from an allowlist with names, paths, coordinates and image metadata removed, and
 `tests\privacy-scan.ps1` checks every file, archive and commit message before anything is published.
