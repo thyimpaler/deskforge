@@ -116,7 +116,7 @@
                        "files":  [
                                      {
                                          "path":  "addons/depth/Depth.ini",
-                                         "sha256":  "fed4dc28ba35f8efd3928fb1fcc545064c024adf769d8bd2f544a46cd9d6194f"
+                                         "sha256":  "e25679d8d684e84be2bf76434e5ed45611e77d7cfe93621d2d03590ceac87514"
                                      },
                                      {
                                          "path":  "addons/depth/README.md",
