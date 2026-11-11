@@ -329,7 +329,7 @@ public static class DeskforgeSpi {
     return [DeskforgeSpi]::SystemParametersInfo(0x0014, 0, $File, 0x03)
 }
 
-function Get-FileSha256([string]$Path) { return (Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash.ToLower() }
+function Get-FileSha256([string]$Path) { return (Get-FileHash -Algorithm SHA256 -LiteralPath $Path -ErrorAction Stop).Hash.ToLower() }
 
 # -Rainmeter writes UTF-16 LE with a BOM, the encoding Rainmeter reads non-ASCII text from reliably.
 function Write-DeskText([string]$Path, [string]$Text, [switch]$Rainmeter) {

@@ -332,7 +332,7 @@
     "lib":  [
                 {
                     "path":  "tools/lib/deskforge.psm1",
-                    "sha256":  "b36aa3ab67063319ee0cd2cffaf176803dbe40b9774d26019295b5a7f85665cb"
+                    "sha256":  "74d5ef23b7f39830bbb59e4c7a3ce1eb9b2380d7d8d214a83206da686c8143b5"
                 }
             ],
     "tests":  [
