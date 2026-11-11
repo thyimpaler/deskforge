@@ -66,3 +66,18 @@ Choices made where the plan was open or unclear. Each one takes the simpler opti
   alert.inc) so Rainmeter never logs a missing file, and restore removes them even though they changed.
 - csc builds all three helpers with /warnaserror+: zero warnings. The skins were NOT loaded in Rainmeter:
   that would touch the owner's running Rainmeter. The skin load test stays an owner step (plan section 8).
+
+## M4 themes and addons
+
+- Four complete themes: red-on-black (default), paper-light, terminal-green, minimal-grey. Each has
+  theme.json, README.md, screenshot.png and wallpaper.png. Wallpapers are drawn by the render tool, so no
+  personal wallpaper or photo ships.
+- Added an `onAccent` colour to every theme (text drawn on the accent, used by the Alert band), because white
+  text on the light accents of terminal-green and minimal-grey would be unreadable.
+- Bug found and fixed: the generated theme.inc put `[Variables]` inside its comment line (a PowerShell
+  operator-precedence slip from M2), so Rainmeter would not have seen the theme. `tests/items.tests.ps1` now
+  checks the header and was confirmed to fail on the M2 code.
+- Addons use the theme colours; the market helper reads theme.inc for its candle and ladder colours.
+  Wave's bar width now follows the screen width. Mood loads its gradient from its own folder.
+- Tape and Depth stay in the kit, off by default, until the owner decides (open decision 3).
+- The wake reveal line is the placeholder `WELCOME BACK` until the owner picks the wording (open decision 1).

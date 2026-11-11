@@ -24,6 +24,22 @@ static class Market
 
     static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
+    // Colours from @Resources\theme.inc (written by install.ps1), with the red-on-black values as fallback.
+    static string Accent = "164,22,26", Warn = "212,137,42", Mid = "120,120,120", Dim = "52,52,52";
+    static void LoadTheme()
+    {
+        try
+        {
+            foreach (var line in System.IO.File.ReadAllLines(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "theme.inc")))
+            {
+                int i = line.IndexOf('='); if (i <= 0) continue;
+                string k = line.Substring(0, i).Trim(), v = line.Substring(i + 1).Trim();
+                if (k == "Accent") Accent = v; else if (k == "Warn") Warn = v; else if (k == "Mid") Mid = v; else if (k == "Dim") Dim = v;
+            }
+        }
+        catch { }
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     struct COPYDATASTRUCT { public IntPtr dwData; public int cbData; public IntPtr lpData; }
     [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern IntPtr FindWindow(string c, string t);
@@ -90,7 +106,7 @@ static class Market
             if (k >= 0)
             {
                 bool last = k == n - 1, up = c[k] >= o[k];
-                string col = last ? "212,137,42,255" : (up ? "120,120,120,150" : "164,22,26,170");
+                string col = last ? Warn + ",255" : (up ? Mid + ",150" : Accent + ",170");
                 double x = i * step + (step - body) / 2;
                 wick = Rect(x + body / 2 - 0.5, Y(hi[k]), 1, Y(lo[k]) - Y(hi[k]), col);
                 double top = Y(Math.Max(o[k], c[k])), bot = Y(Math.Min(o[k], c[k]));
@@ -143,7 +159,7 @@ static class Market
             double price = isAsk ? askBot + b * Bin : bidTop - b * Bin;
             if (q > wallQ) { wallQ = q; wallRow = r; }
             double w = 4 + Math.Sqrt(q / maxQ) * BarMax;
-            string col = isAsk ? "52,52,52,200" : "40,40,40,200";
+            string col = isAsk ? Mid + ",90" : Dim + ",140";
             sb.Append("[!SetVariable D" + (r + 1) + " \"" + Rect(BarRight - w, r * Row + (r >= Levels ? 8 : 0), w, 12, col) + "\" \"deskforge\\Depth\"]");
             sb.Append("[!SetVariable P" + (r + 1) + " \"" + price.ToString("#,0", Inv) + "\" \"deskforge\\Depth\"]");
         }
@@ -152,7 +168,7 @@ static class Market
         {
             double q = wallRow < Levels ? askQ[Levels - 1 - wallRow] : bidQ[wallRow - Levels];
             double w = 4 + Math.Sqrt(q / maxQ) * BarMax;
-            sb.Append("[!SetVariable D" + (wallRow + 1) + " \"" + Rect(BarRight - w, wallRow * Row + (wallRow >= Levels ? 8 : 0), w, 12, "212,137,42,150") + "\" \"deskforge\\Depth\"]");
+            sb.Append("[!SetVariable D" + (wallRow + 1) + " \"" + Rect(BarRight - w, wallRow * Row + (wallRow >= Levels ? 8 : 0), w, 12, Warn + ",150") + "\" \"deskforge\\Depth\"]");
         }
         sb.Append("[!UpdateMeterGroup D \"deskforge\\Depth\"][!Redraw \"deskforge\\Depth\"]");
         return sb.ToString();
@@ -170,6 +186,7 @@ static class Market
         using (var m = new Mutex(true, "deskforgeMarketFeed", out created))
         {
             if (!created) return;
+            LoadTheme();
             try { Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.Idle; } catch { }
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
             DateTime nextTape = DateTime.MinValue;

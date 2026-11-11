@@ -1,0 +1,8 @@
+{
+  "name": "terminal-green",
+  "label": "Terminal green",
+  "description": "Phosphor green on a black-green screen, monospace everywhere.",
+  "colors": { "bg": "#050806", "surface": "#070b08", "ink": "#b8f5c4", "mid": "#5fae72", "dim": "#2f5a3a", "rule": "#12261a", "accent": "#3fd46b", "warn": "#e0b341", "onAccent": "#050806" },
+  "fonts": { "display": "Consolas", "mono": "Consolas" },
+  "wallpaper": "wallpaper.png"
+}

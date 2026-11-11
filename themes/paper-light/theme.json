@@ -1,0 +1,8 @@
+{
+  "name": "paper-light",
+  "label": "Paper light",
+  "description": "Warm paper background, dark ink, a blue accent. For bright rooms and daytime work.",
+  "colors": { "bg": "#f2efe8", "surface": "#ebe7de", "ink": "#1b1a17", "mid": "#5b5850", "dim": "#8c887f", "rule": "#d6d1c6", "accent": "#1f4fd1", "warn": "#b5651d", "onAccent": "#ffffff" },
+  "fonts": { "display": "Georgia", "mono": "Consolas" },
+  "wallpaper": "wallpaper.png"
+}

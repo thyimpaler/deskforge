@@ -1,0 +1,8 @@
+{
+  "name": "minimal-grey",
+  "label": "Minimal grey",
+  "description": "Soft graphite, no colour accent, only light and shade. The quietest theme.",
+  "colors": { "bg": "#1c1d1f", "surface": "#18191b", "ink": "#e4e4e2", "mid": "#9a9b9d", "dim": "#5f6063", "rule": "#2c2d30", "accent": "#d0d0cc", "warn": "#b8a27a", "onAccent": "#1c1d1f" },
+  "fonts": { "display": "Segoe UI", "mono": "Consolas" },
+  "wallpaper": "wallpaper.png"
+}

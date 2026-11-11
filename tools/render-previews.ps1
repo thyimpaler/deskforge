@@ -130,7 +130,7 @@ function Draw-Home($g, $t, [int]$W, [int]$H) {
     $null = T $g '09:41' $t.fonts.display 112 (C $c.ink) ($x - 12) 66 -Bold
     $null = T $g 'WEDNESDAY 11 NOVEMBER' $m 12 (C $c.mid) $x 276
     $null = T $g 'Search anything' $t.fonts.display 26 (C $c.mid) ($W - $x) 206 -Right -Bold
-    $null = T $g 'ALT + SPACE' $m 10 (C $c.dim) ($W - $x) 278 -Right
+    $null = T $g 'WIN + S' $m 10 (C $c.dim) ($W - $x) 278 -Right
     Box $g (C $c.rule) $x 340 ($W - 2 * $x) 1
     $null = T $g '01 / APPS' $m 10 (C $c.dim) $x 372
     $null = T $g '02 / SYSTEM' $m 10 (C $c.dim) ($W * 0.67) 372
@@ -211,9 +211,9 @@ function Draw-Wave($g, $t, [int]$W, [double]$y0) {
 function Draw-Alert($g, $t, [int]$W) {
     $c = $t.colors
     Box $g (C $c.accent) 0 0 $W 72
-    $null = T $g 'NEW' $t.fonts.mono 10 ([Drawing.Color]::FromArgb(235, 255, 255, 255)) 40 28
-    $null = T $g 'MAIL' $t.fonts.display 22 ([Drawing.Color]::White) 110 14 -Bold
-    $null = T $g '3 UNREAD MESSAGES' $t.fonts.display 14 ([Drawing.Color]::FromArgb(235, 255, 255, 255)) ($W - 40) 24 -Right -Bold
+    $null = T $g 'NEW' $t.fonts.mono 10 (C $c.onAccent 210) 40 28
+    $null = T $g 'MAIL' $t.fonts.display 22 (C $c.onAccent) 110 14 -Bold
+    $null = T $g '3 UNREAD MESSAGES' $t.fonts.display 14 (C $c.onAccent 225) ($W - 40) 24 -Right -Bold
 }
 
 function Draw-Desk($t) {
