@@ -306,7 +306,7 @@
                   },
                   {
                       "path":  "tools/install.ps1",
-                      "sha256":  "f4c95244fdd54fdf34e86c44b4a11fbcf5f231877c9c6f3c9045f850d3c274e0"
+                      "sha256":  "2fe81379e14c335069fc535d52bf33b4a12e9ecee0a3cd2354c77a324ff907c6"
                   },
                   {
                       "path":  "tools/intake.ps1",
@@ -332,7 +332,7 @@
     "lib":  [
                 {
                     "path":  "tools/lib/deskforge.psm1",
-                    "sha256":  "dcf4794e0a838b5d6965f252d89876fa506969da7aaf777b361b9b38ac1c84bb"
+                    "sha256":  "b36aa3ab67063319ee0cd2cffaf176803dbe40b9774d26019295b5a7f85665cb"
                 }
             ],
     "tests":  [
@@ -418,7 +418,7 @@
                   },
                   {
                       "path":  "tests/install-restore.tests.ps1",
-                      "sha256":  "168d33d7166bedd47aaed5bdf548bb8ad029d3452cf758915628492d9bafba9e"
+                      "sha256":  "f6b6b9a81fe090cb69690aa6530a59d1cad12373e8cf838c996051ffeef43916"
                   },
                   {
                       "path":  "tests/items.tests.ps1",

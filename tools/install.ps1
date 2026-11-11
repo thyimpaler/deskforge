@@ -112,6 +112,29 @@ try {
         }
     }
     Say 'PLAN' "log       $($ctx.LogPath)"
+
+    # ------------------------------------------------------------ preflight: everything the plan reads must exist
+    # Runs in the dry run too, so a missing wallpaper, helper source or compiler shows up before anything changes.
+    $problems = @()
+    foreach ($a in $plan) {
+        if ($a.kind -eq 'file' -and $a.from -and -not (Test-Path -LiteralPath $a.from -PathType Leaf)) {
+            $problems += $(if ($a.phase -eq 'wallpaper') { "the theme wallpaper is missing: $($a.from)" } else { "a file to copy is missing: $($a.from)" })
+        }
+        if ($a.kind -eq 'helper') {
+            $cs = Join-Path $repo "helpers\$($a.name).cs"
+            if (-not (Test-Path -LiteralPath $cs -PathType Leaf)) { $problems += "the helper source is missing: $cs" }
+        }
+    }
+    if (@($plan | Where-Object { $_.kind -eq 'helper' }).Count -gt 0) {
+        if (-not (Test-Path -LiteralPath (Join-Path $repo 'helpers\build.ps1') -PathType Leaf)) { $problems += 'the helper build script is missing: helpers\build.ps1' }
+        if (-not (Get-DeskCsc)) { $problems += 'csc.exe was not found (it ships with .NET Framework 4), so the helpers cannot be compiled' }
+    }
+    if ($problems.Count -gt 0) {
+        foreach ($p in $problems) { Say 'ERROR' $p }
+        Say 'INFO' 'nothing was changed.'
+        exit 1
+    }
+
     if (-not $Apply) {
         Say 'INFO' "dry run: $($plan.Count) change(s) listed, nothing written. Run again with -Apply to make them."
         exit 0

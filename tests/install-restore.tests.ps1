@@ -61,6 +61,18 @@ try {
     Check 'dry run lists files and registry values' ((@($out -match '^PLAN .* file ').Count -gt 5) -and (@($out -match '^PLAN .*set registry').Count -eq 4))
     Check 'dry run writes nothing' ((Same $state0 (Get-State)) -and ($reg0 -eq (Get-Reg)) -and -not (Test-Path "$root\State"))
 
+    # ---- preflight: with no C# compiler the dry run and the apply both stop before any change
+    # (WINDIR is changed for this process only, and put back straight after)
+    $realWin = $env:WINDIR
+    try {
+        $env:WINDIR = Join-Path $root 'no-windows-here'
+        $out = & $install -Config $cfgPath -TestRoot $root; $code = $LASTEXITCODE
+        $out2 = & $install -Config $cfgPath -TestRoot $root -Apply; $code2 = $LASTEXITCODE
+    }
+    finally { $env:WINDIR = $realWin }
+    Check 'dry run fails when csc is missing' ($code -eq 1 -and [bool]($out -match '^ERROR .*csc'))
+    Check 'apply with csc missing stops before any change' ($code2 -eq 1 -and (Same $state0 (Get-State)) -and ($reg0 -eq (Get-Reg)) -and -not (Test-Path "$root\State"))
+
     # ---- apply
     $out = & $install -Config $cfgPath -TestRoot $root -Apply -SkipHelpers:$SkipHelpers
     Check 'apply exit code 0' ($LASTEXITCODE -eq 0) (($out | Select-Object -Last 3) -join ' | ')

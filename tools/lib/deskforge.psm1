@@ -262,6 +262,15 @@ function Test-IsAdmin {
     return $p.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
+# The C# compiler that ships with .NET Framework 4, or $null. helpers/build.ps1 looks in the same two places.
+function Get-DeskCsc {
+    foreach ($f in 'Framework64', 'Framework') {
+        $p = Join-Path $env:WINDIR "Microsoft.NET/$f/v4.0.30319/csc.exe"
+        if (Test-Path -LiteralPath $p -PathType Leaf) { return $p }
+    }
+    return $null
+}
+
 function Test-RainmeterRunning { return [bool](Get-Process Rainmeter -ErrorAction SilentlyContinue) }
 
 # ------------------------------------------------------------------ registry (real HKCU, or a JSON file in test mode)
