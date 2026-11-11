@@ -1,5 +1,5 @@
 // Runs site/app.js against a tiny stand-in for the browser DOM (node, no packages), to check behaviour the
-// validator tests cannot see: Copy refuses an invalid desk.
+// validator tests cannot see: Copy refuses an invalid desk, and odd coin ids cannot break the preview.
 // Run: node tests/site-app.test.mjs
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -74,6 +74,14 @@ check('Copy does nothing and says so when the desk has errors', () => {
   assert.match(p.$('status').textContent, /not copied/i);
   assert.match(p.$('status').className, /bad/);
 });
+
+for (const id of ['constructor', 'toString', '__proto__', 'hasownproperty']) {
+  check(`coin id "${id}" does not break the page`, () => {
+    const p = load();
+    p.type('coin1', id);
+    assert.ok(p.$('json').textContent.includes(JSON.stringify(id.toLowerCase())), 'the coin did not reach desk.json');
+  });
+}
 
 console.log(fails ? `site-app: FAIL (${fails})` : 'site-app: PASS');
 process.exit(fails ? 1 : 0);

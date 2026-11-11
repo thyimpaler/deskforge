@@ -442,7 +442,7 @@
                   },
                   {
                       "path":  "tests/site-app.test.mjs",
-                      "sha256":  "ec0e753d70b23dc12d923f4d630d68e6d0a6865c4a2cfb7a4991d26f805d9d27"
+                      "sha256":  "175496d433fd6736b4b7d35e0e3747190cd6f55da53e8a683c70cc0b66dedd3f"
                   },
                   {
                       "path":  "tests/site.test.mjs",

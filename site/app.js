@@ -27,7 +27,9 @@
     var n = parseInt(hex.slice(1), 16);
     return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + (a == null ? 1 : a) + ')';
   }
-  function coinLabel(id) { return LABELS[id] || String(id || '').replace(/[^a-z0-9]/g, '').toUpperCase().slice(0, 4); }
+  // own-property lookups only: a coin id such as "constructor" must not find something on Object.prototype
+  function has(o, k) { return Object.prototype.hasOwnProperty.call(o, k); }
+  function coinLabel(id) { return has(LABELS, id) ? LABELS[id] : String(id || '').replace(/[^a-z0-9]/g, '').toUpperCase().slice(0, 4); }
 
   // ------------------------------------------------------------------ controls
   function buildThemes() {
@@ -124,7 +126,7 @@
   }
 
   function renderDesk() {
-    var t = D.themes[state.theme] || D.themes[themeNames[0]];
+    var t = has(D.themes, state.theme) ? D.themes[state.theme] : D.themes[themeNames[0]];
     var c = t.colors, disp = '"' + t.fonts.display + '", var(--display)', mono = '"' + t.fonts.mono + '", var(--mono)';
     var m = D.mock, desk = $('desk');
     desk.textContent = '';
@@ -169,7 +171,7 @@
       text(desk, m.weather.current.relative_humidity_2m + '% HUMID  .  ' + wind + (f ? ' MPH' : ' KM/H'), px + 104, py + 240, mono, 12, c.mid);
       text(desk, '03 / PRICES', px, py + 292, mono, 10, c.dim);
       state.coins.slice(0, 2).forEach(function (id, k) {
-        var d = m.prices[id] || m.prices[k === 0 ? 'bitcoin' : 'ethereum'];
+        var d = has(m.prices, id) ? m.prices[id] : m.prices[k === 0 ? 'bitcoin' : 'ethereum'];
         var chg = d.usd_24h_change, yy = py + 318 + k * 39;
         text(desk, coinLabel(id), px, yy + 9, mono, 12, c.mid);
         text(desk, '$' + Math.round(d.usd).toLocaleString('en-US'), px + 60, yy, disp, 24, c.ink, { bold: true });
