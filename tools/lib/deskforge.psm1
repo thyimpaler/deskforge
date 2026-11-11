@@ -90,10 +90,32 @@ function ConvertTo-RmColor([string]$hex) {
     return '{0},{1},{2}' -f [Convert]::ToInt32($Matches[1], 16), [Convert]::ToInt32($Matches[2], 16), [Convert]::ToInt32($Matches[3], 16)
 }
 
+# Theme values end up in theme.inc (an ini file Rainmeter reads) and in file paths, so they are checked
+# with strict patterns before anything uses them. Throws on the first problem.
+function Assert-DeskTheme($Theme, [string]$Name, [string]$ThemeDir) {
+    if ($Name -cnotmatch '^[a-z0-9-]{1,40}$') { throw "bad theme name '$Name' (use a-z, 0-9 and -, up to 40 characters)" }
+    if (-not ($Theme.name -is [string]) -or $Theme.name -cne $Name) { throw "theme '$Name': the name in theme.json must be '$Name'" }
+    foreach ($k in 'bg', 'surface', 'ink', 'mid', 'dim', 'rule', 'accent', 'warn', 'onAccent') { $null = ConvertTo-RmColor $Theme.colors.$k }
+    foreach ($f in 'display', 'mono') {
+        $v = $Theme.fonts.$f
+        if (-not ($v -is [string]) -or $v -notmatch '^[A-Za-z0-9](?:[A-Za-z0-9 _.-]{0,62}[A-Za-z0-9])?$') {
+            throw "theme '$Name': bad font name for fonts.$f (use letters, digits, space, _ . and -, up to 64 characters)"
+        }
+    }
+    $w = $Theme.wallpaper
+    if (-not ($w -is [string]) -or $w.Contains('..') -or $w -notmatch '^[A-Za-z0-9][A-Za-z0-9 _./\-]{0,119}\.(?i:png|jpg|jpeg|bmp)$') {
+        throw "theme '$Name': bad wallpaper path (a png, jpg or bmp inside the theme folder, no '..', no drive or leading slash)"
+    }
+    $root = [IO.Path]::GetFullPath($ThemeDir).TrimEnd('\') + '\'
+    $full = [IO.Path]::GetFullPath((Join-Path $ThemeDir $w))
+    if (-not $full.StartsWith($root, [StringComparison]::OrdinalIgnoreCase)) { throw "theme '$Name': the wallpaper must be inside the theme folder" }
+}
+
 function Read-DeskTheme([string]$Name) {
-    $p = Join-Path $script:Repo "themes\$Name\theme.json"
-    $t = Get-Content -Raw $p | ConvertFrom-Json
-    foreach ($k in 'bg', 'surface', 'ink', 'mid', 'dim', 'rule', 'accent', 'warn', 'onAccent') { $null = ConvertTo-RmColor $t.colors.$k }
+    if ($Name -cnotmatch '^[a-z0-9-]{1,40}$') { throw "bad theme name '$Name' (use a-z, 0-9 and -, up to 40 characters)" }
+    $dir = Join-Path $script:Repo "themes\$Name"
+    $t = Get-Content -Raw (Join-Path $dir 'theme.json') | ConvertFrom-Json
+    Assert-DeskTheme $t $Name $dir
     return $t
 }
 

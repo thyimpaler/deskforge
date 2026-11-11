@@ -33,6 +33,24 @@ foreach ($d in Get-ChildItem -Directory (Join-Path $repo 'themes')) {
     } catch { $ok = $false }
     Check "themes/$($d.Name) theme.json complete and theme.inc well formed" $ok
 }
+# Read-DeskTheme must refuse values that could break out of theme.inc or the theme folder.
+function New-TestTheme { return (Get-Content -Raw (Join-Path $repo 'themes\red-on-black\theme.json') | ConvertFrom-Json) }
+function Rejects([scriptblock]$change, [string]$name = 'red-on-black') {
+    $t = New-TestTheme; & $change $t
+    try { Assert-DeskTheme $t $name (Join-Path $repo 'themes\red-on-black'); return $false } catch { return $true }
+}
+Check 'theme check accepts the shipped theme' (-not (Rejects { param($t) }))
+Check 'theme check rejects a font name with a line break' (Rejects { param($t) $t.fonts.display = "Arial`r`n[Rainmeter]" })
+Check 'theme check rejects a font name with a bracket' (Rejects { param($t) $t.fonts.mono = 'Consolas]' })
+Check 'theme check rejects a font name with a # variable' (Rejects { param($t) $t.fonts.mono = '#Accent#' })
+Check 'theme check rejects an empty font name' (Rejects { param($t) $t.fonts.display = '' })
+Check 'theme check rejects .. in the wallpaper path' (Rejects { param($t) $t.wallpaper = '..\..\secret.png' })
+Check 'theme check rejects a rooted wallpaper path' (Rejects { param($t) $t.wallpaper = 'C:\Windows\x.png' })
+Check 'theme check rejects a wallpaper that is not an image' (Rejects { param($t) $t.wallpaper = 'wallpaper.exe' })
+Check 'theme check rejects a theme name with a path' (Rejects { param($t) $t.name = '..\x' } '..\x')
+Check 'theme check rejects a name that differs from the folder' (Rejects { param($t) $t.name = 'other' })
+$threw = $false; try { $null = Read-DeskTheme '..\..\x' } catch { $threw = $true }
+Check 'Read-DeskTheme rejects a theme name with ..' $threw
 Check 'four themes ship' (@(Get-ChildItem -Directory (Join-Path $repo 'themes')).Count -eq 4)
 Write-Output $(if ($fails) { "items: FAIL ($fails)" } else { 'items: PASS' })
 if ($fails) { exit 1 }
