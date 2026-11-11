@@ -1,0 +1,8 @@
+{
+  "name": "red-on-black",
+  "label": "Red on black",
+  "description": "Near-black desk, off-white type, one deep red accent and an amber for warnings.",
+  "colors": { "bg": "#0a0a0a", "surface": "#080808", "ink": "#e9e9e9", "mid": "#969696", "dim": "#5c5c5c", "rule": "#222222", "accent": "#a4161a", "warn": "#d4892a" },
+  "fonts": { "display": "Bahnschrift", "mono": "Consolas" },
+  "wallpaper": "wallpaper.png"
+}

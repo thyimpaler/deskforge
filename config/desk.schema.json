@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://deskforge.local/desk.schema.json",
+  "title": "deskforge desk.json",
+  "description": "One file that describes a desk. Unknown fields are rejected.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "theme", "city", "latitude", "longitude", "units", "clock", "coins", "dock", "skins", "addons", "wakeReveal", "refreshSeconds", "startup", "homeApps"],
+  "properties": {
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "theme": { "type": "string", "pattern": "^[a-z0-9-]{1,40}$", "description": "Folder name under themes/" },
+    "city": { "type": "string", "minLength": 1, "maxLength": 40, "pattern": "^[\\p{L}0-9 .,'-]+$", "description": "Text label only. Weather uses latitude and longitude." },
+    "latitude": { "type": "number", "minimum": -90, "maximum": 90 },
+    "longitude": { "type": "number", "minimum": -180, "maximum": 180 },
+    "units": { "type": "string", "enum": ["c", "f"] },
+    "clock": { "type": "string", "enum": ["12", "24"] },
+    "coins": {
+      "type": "array", "minItems": 1, "maxItems": 2, "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z0-9-]{1,40}$", "description": "CoinGecko id, for example bitcoin" }
+    },
+    "dock": { "type": "string", "enum": ["top", "bottom"] },
+    "skins": {
+      "type": "object", "additionalProperties": false,
+      "required": ["panel", "now", "dock", "home", "boot"],
+      "properties": {
+        "panel": { "type": "boolean" }, "now": { "type": "boolean" }, "dock": { "type": "boolean" },
+        "home": { "type": "boolean" }, "boot": { "type": "boolean" }
+      }
+    },
+    "addons": {
+      "type": "object", "additionalProperties": false,
+      "required": ["tape", "depth", "wave", "mood", "alert"],
+      "properties": {
+        "tape": { "type": "boolean" }, "depth": { "type": "boolean" }, "wave": { "type": "boolean" },
+        "mood": { "type": "boolean" }, "alert": { "type": "boolean" }
+      }
+    },
+    "wakeReveal": {
+      "type": "object", "additionalProperties": false,
+      "required": ["enabled", "text"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "text": { "type": "string", "maxLength": 40, "pattern": "^[A-Za-z0-9 .,:!?'-]*$" }
+      }
+    },
+    "refreshSeconds": { "type": "integer", "minimum": 60, "maximum": 3600 },
+    "startup": { "type": "boolean" },
+    "homeApps": {
+      "type": "array", "maxItems": 12,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["name", "path"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "maxLength": 24, "pattern": "^[A-Za-z0-9 .+&'-]+$" },
+          "path": { "type": "string", "minLength": 1, "maxLength": 260, "pattern": "^[^\"\\[\\]#|\\r\\n]+$", "description": "An .exe, a shell: or ms-settings: URI, or a folder" }
+        }
+      }
+    }
+  }
+}
