@@ -116,7 +116,7 @@
                        "files":  [
                                      {
                                          "path":  "addons/depth/Depth.ini",
-                                         "sha256":  "33fdf9ba555296d21b10cf2a9bb1eaaeac3892776190cafedccc45fc6c57c84e"
+                                         "sha256":  "fed4dc28ba35f8efd3928fb1fcc545064c024adf769d8bd2f544a46cd9d6194f"
                                      },
                                      {
                                          "path":  "addons/depth/README.md",
@@ -284,7 +284,7 @@
                     },
                     {
                         "path":  "helpers/market.cs",
-                        "sha256":  "97df51ea37e4eec37b71017020fdc3d4d789ec3667161af67a6e14b18ac7092b"
+                        "sha256":  "f97785eed80f68f7617741e0de89c2b2f7def9142a019649da6718a6c61501ec"
                     },
                     {
                         "path":  "helpers/nowplaying.cs",

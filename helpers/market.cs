@@ -20,9 +20,9 @@ static class Market
     const string Symbol = "BTCUSDT";
     const int Candles = 46;
     // Tape skin box (physical px): see Tape.ini
-    const double TW = 850, TH = 200, Pad = 10;
-    // Depth skin: 10 asks + 10 bids, 22px rows, bars right-aligned at x=244, max bar 200px
-    const int Levels = 10, Row = 22; const double BarRight = 244, BarMax = 200, Bin = 10;
+    const double TH = 200, Pad = 10;
+    // Depth skin: 10 asks + 10 bids, max bar 200px. Row positions and the right edge (x=244) live in Depth.ini
+    const int Levels = 10; const double BarMax = 200, Bin = 10;
 
     static readonly CultureInfo Inv = CultureInfo.InvariantCulture;
 
@@ -76,11 +76,6 @@ static class Market
         return null;
     }
 
-    static string N(double v) { return Math.Round(v, 1).ToString("0.#", Inv); }
-    static string Rect(double x, double y, double w, double h, string col)
-    {
-        return "Rectangle " + N(x) + "," + N(y) + "," + N(Math.Max(w, 1)) + "," + N(Math.Max(h, 1)) + " | Fill Color " + col + " | StrokeWidth 0";
-    }
     static string I(double v) { return ((int)Math.Round(v)).ToString(Inv); }
     static void Set(StringBuilder sb, string name, string value, string config)
     {
@@ -156,27 +151,28 @@ static class Market
         }
         double maxQ = 1e-9;
         for (int i = 0; i < Levels; i++) { maxQ = Math.Max(maxQ, Math.Max(askQ[i], bidQ[i])); }
+        // the biggest resting order (the "wall") gets the one accent
         int wallRow = -1; double wallQ = 0;
+        for (int r = 0; r < Levels * 2; r++)
+        {
+            double q = r < Levels ? askQ[Levels - 1 - r] : bidQ[r - Levels];
+            if (q > wallQ) { wallQ = q; wallRow = r; }
+        }
         var sb = new StringBuilder();
-        // rows 1..10 = asks (highest at top), 11..20 = bids (highest at top)
+        // rows 1..10 = asks (highest at top), 11..20 = bids (highest at top).
+        // Row Y, height and the right edge are fixed in Depth.ini; only the width and colour change here.
         for (int r = 0; r < Levels * 2; r++)
         {
             bool isAsk = r < Levels;
             int b = isAsk ? (Levels - 1 - r) : (r - Levels);
             double q = isAsk ? askQ[b] : bidQ[b];
             double price = isAsk ? askBot + b * Bin : bidTop - b * Bin;
-            if (q > wallQ) { wallQ = q; wallRow = r; }
-            double w = 4 + Math.Sqrt(q / maxQ) * BarMax;
-            string col = isAsk ? Mid + ",90" : Dim + ",140";
-            sb.Append("[!SetVariable D" + (r + 1) + " \"" + Rect(BarRight - w, r * Row + (r >= Levels ? 8 : 0), w, 12, col) + "\" \"deskforge\\Depth\"]");
-            sb.Append("[!SetVariable P" + (r + 1) + " \"" + price.ToString("#,0", Inv) + "\" \"deskforge\\Depth\"]");
-        }
-        // the biggest resting order (the "wall") gets the one accent
-        if (wallRow >= 0)
-        {
-            double q = wallRow < Levels ? askQ[Levels - 1 - wallRow] : bidQ[wallRow - Levels];
-            double w = 4 + Math.Sqrt(q / maxQ) * BarMax;
-            sb.Append("[!SetVariable D" + (wallRow + 1) + " \"" + Rect(BarRight - w, wallRow * Row + (wallRow >= Levels ? 8 : 0), w, 12, Warn + ",150") + "\" \"deskforge\\Depth\"]");
+            double w = Math.Max(4 + Math.Sqrt(q / maxQ) * BarMax, 1);
+            string col = r == wallRow ? Warn + ",150" : (isAsk ? Mid + ",90" : Dim + ",140");
+            string id = (r + 1).ToString(Inv);
+            Set(sb, "BW" + id, I(w), "Depth");
+            Set(sb, "BC" + id, col, "Depth");
+            Set(sb, "P" + id, price.ToString("#,0", Inv), "Depth");
         }
         sb.Append("[!UpdateMeterGroup D \"deskforge\\Depth\"][!Redraw \"deskforge\\Depth\"]");
         return sb.ToString();
