@@ -128,6 +128,7 @@ fieldset.seg legend { width: 100%; margin-bottom: 8px; padding: 0; }
 .app .del { min-width: 44px; padding: 0; }
 
 .foot { padding: 32px clamp(16px, 5vw, 72px) 48px; border-top: 1px solid var(--rule); }
+.foot a { display: inline-block; padding: 14px 0; color: var(--ink); text-underline-offset: 3px; }
 
 @media (prefers-reduced-motion: no-preference) {
   .btn, .seg span, .theme { transition: border-color .15s ease, background-color .15s ease, color .15s ease; }
