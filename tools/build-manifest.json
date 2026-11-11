@@ -156,7 +156,7 @@
                        "files":  [
                                      {
                                          "path":  "addons/tape/README.md",
-                                         "sha256":  "f05ce2c02c19cad4cb61eebb5ec390c3e6a431e754e785f83833094e16393aae"
+                                         "sha256":  "021d6aaa43d9d97957ffc7fdd17800bdc395de80187ce2f98badfff93d6cef11"
                                      },
                                      {
                                          "path":  "addons/tape/screenshot.png",
@@ -164,7 +164,7 @@
                                      },
                                      {
                                          "path":  "addons/tape/Tape.ini",
-                                         "sha256":  "0f89747ee4b073f5fe9931d3526249e4d093f5d07fb6ca11054a36df43dad9fc"
+                                         "sha256":  "1420dce8d0a81fcf44765477b497814a274c0335ee3a1f799c19de5dcbdb5b46"
                                      }
                                  ]
                    },
@@ -284,7 +284,7 @@
                     },
                     {
                         "path":  "helpers/market.cs",
-                        "sha256":  "d5ae349b9d8bab354291862b77d60207f0338ad30b8c8ad52dd128657f9418bb"
+                        "sha256":  "97df51ea37e4eec37b71017020fdc3d4d789ec3667161af67a6e14b18ac7092b"
                     },
                     {
                         "path":  "helpers/nowplaying.cs",

@@ -1,7 +1,9 @@
 // Live market feed for the deskforge wallpaper skins (deskforge\Tape, deskforge\Depth).
 // Fetches Binance public data (no key): 15m candles every 10s, order book every 4s.
-// Computes pixel geometry here and pushes it to Rainmeter as ONE bang string via WM_COPYDATA,
-// so Rainmeter only redraws. Idle priority, single instance, exits when Rainmeter closes.
+// Works out the pixel numbers here and pushes them to Rainmeter as ONE bang string via WM_COPYDATA.
+// It pushes numbers and colours only (Y, H, W, SolidColor of Image meters), never Shape strings:
+// rewriting Shape geometry on a timer is the pattern that crashes Rainmeter.
+// Idle priority, single instance, exits when Rainmeter closes.
 // Build: helpers\build.ps1
 using System;
 using System.Collections.Generic;
@@ -79,6 +81,11 @@ static class Market
     {
         return "Rectangle " + N(x) + "," + N(y) + "," + N(Math.Max(w, 1)) + "," + N(Math.Max(h, 1)) + " | Fill Color " + col + " | StrokeWidth 0";
     }
+    static string I(double v) { return ((int)Math.Round(v)).ToString(Inv); }
+    static void Set(StringBuilder sb, string name, string value, string config)
+    {
+        sb.Append("[!SetVariable " + name + " \"" + value + "\" \"deskforge\\" + config + "\"]");
+    }
 
     static string TapeBangs()
     {
@@ -97,27 +104,28 @@ static class Market
         }
         double span = Math.Max(max - min, 1e-9);
         Func<double, double> Y = v => Pad + (max - v) / span * (TH - 2 * Pad);
-        double step = TW / Candles, body = 8;
+        // X and W of every candle are fixed in Tape.ini; only Y, H and the colour change here.
         var sb = new StringBuilder();
         for (int i = 0; i < Candles; i++)
         {
-            string wick = "Rectangle 0,0,1,1 | Fill Color 0,0,0,0 | StrokeWidth 0", bod = wick;
+            string col = "0,0,0,0", wy = "0", wh = "1", by = "0", bh = "1";
             int k = i - (Candles - n);
             if (k >= 0)
             {
                 bool last = k == n - 1, up = c[k] >= o[k];
-                string col = last ? Warn + ",255" : (up ? Mid + ",150" : Accent + ",170");
-                double x = i * step + (step - body) / 2;
-                wick = Rect(x + body / 2 - 0.5, Y(hi[k]), 1, Y(lo[k]) - Y(hi[k]), col);
+                col = last ? Warn + ",255" : (up ? Mid + ",150" : Accent + ",170");
+                wy = I(Y(hi[k])); wh = I(Math.Max(Y(lo[k]) - Y(hi[k]), 1));
                 double top = Y(Math.Max(o[k], c[k])), bot = Y(Math.Min(o[k], c[k]));
-                bod = Rect(x, top, body, Math.Max(bot - top, 2), col);
+                by = I(top); bh = I(Math.Max(bot - top, 2));
             }
-            sb.Append("[!SetVariable W" + (i + 1) + " \"" + wick + "\" \"deskforge\\Tape\"]");
-            sb.Append("[!SetVariable B" + (i + 1) + " \"" + bod + "\" \"deskforge\\Tape\"]");
+            string id = (i + 1).ToString(Inv);
+            Set(sb, "WY" + id, wy, "Tape"); Set(sb, "WH" + id, wh, "Tape");
+            Set(sb, "BY" + id, by, "Tape"); Set(sb, "BH" + id, bh, "Tape");
+            Set(sb, "CC" + id, col, "Tape");
         }
         double ly = Y(c[n - 1]);
-        sb.Append("[!SetVariable PriceY \"" + N(ly) + "\" \"deskforge\\Tape\"]");
-        sb.Append("[!SetVariable Last \"" + c[n - 1].ToString("#,0", Inv) + "\" \"deskforge\\Tape\"]");
+        Set(sb, "PriceY", I(ly), "Tape");
+        Set(sb, "Last", c[n - 1].ToString("#,0", Inv), "Tape");
         sb.Append("[!UpdateMeterGroup T \"deskforge\\Tape\"][!Redraw \"deskforge\\Tape\"]");
         return sb.ToString();
     }

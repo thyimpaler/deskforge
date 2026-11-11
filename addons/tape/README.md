@@ -18,7 +18,7 @@ api.binance.com, falling back to data-api.binance.vision. Public and keyless. 6 
 
 ## CPU cost
 
-The market helper fetches every 10 s and pushes ready-made geometry, so Rainmeter only redraws. Heavier than the core skins: the earlier desk measured Tape and Depth together at about 3.5 percent of one core.
+The market helper fetches every 10 s and pushes plain numbers (heights, positions, colours) to fixed Image meters, so Rainmeter only redraws. No Shape meter is rewritten. Heavier than the core skins: the earlier desk measured Tape and Depth together at about 3.5 percent of one core.
 
 ## Helper
 
