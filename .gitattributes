@@ -1,0 +1,3 @@
+# Never convert line endings. The skins are a mix of CRLF and LF files, and tools/build-manifest.json
+# stores a SHA-256 of each file as committed, so a checkout that rewrote line endings would not match.
+* -text
