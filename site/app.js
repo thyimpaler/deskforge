@@ -262,6 +262,11 @@
   });
 
   $('copy').addEventListener('click', function () {
+    // never hand out a desk.json the installer would refuse
+    if (lastErrors.length) {
+      flash('Not copied: fix the ' + lastErrors.length + ' thing' + (lastErrors.length > 1 ? 's' : '') + ' listed below first', true);
+      return;
+    }
     var done = function () { flash('Copied'); };
     var fallback = function () {
       var d = $('json').parentNode; d.open = true;

@@ -27,6 +27,8 @@ jobs:
         run: .\tests\run-all.ps1 -Ci
       - name: Site tests
         run: node tests/site.test.mjs
+      - name: Site page tests
+        run: node tests/site-app.test.mjs
       - name: Site data up to date
         shell: powershell
         run: .\tools\build-site-data.ps1 -Check

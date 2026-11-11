@@ -441,6 +441,10 @@
                       "sha256":  "9ef29ea93f3e864d3571d061fb6d421889a141ca460e1e8ea27bd0d5cc1d99f8"
                   },
                   {
+                      "path":  "tests/site-app.test.mjs",
+                      "sha256":  "ec0e753d70b23dc12d923f4d630d68e6d0a6865c4a2cfb7a4991d26f805d9d27"
+                  },
+                  {
                       "path":  "tests/site.test.mjs",
                       "sha256":  "075c27bb139e9bf17bb617d102360705d0cd387ae1f090bbd86bf5d1a64bed9b"
                   }
