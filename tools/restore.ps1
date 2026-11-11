@@ -60,9 +60,27 @@ try {
         $log.entries = $left
         Write-DeskText $ctx.LogPath ($log | ConvertTo-Json -Depth 6)
     }
+    # install-log.json is only a file on disk, so it is not trusted blindly: restore deletes or overwrites a path
+    # only when it resolves (after any ..) to somewhere inside the Rainmeter skins folder, the Rainmeter settings
+    # folder or the deskforge state folder. -AllowRoot also accepts one of those folders itself.
+    function Test-InRoots([string]$path, [switch]$AllowRoot) {
+        try { $full = [IO.Path]::GetFullPath($path).TrimEnd('\') } catch { return $false }
+        foreach ($r in $ctx.SkinsRoot, $ctx.RmSettings, $ctx.StateRoot) {
+            $root = [IO.Path]::GetFullPath($r).TrimEnd('\')
+            if ($full.StartsWith($root + '\', [StringComparison]::OrdinalIgnoreCase)) { return $true }
+            if ($AllowRoot -and $full.Equals($root, [StringComparison]::OrdinalIgnoreCase)) { return $true }
+        }
+        return $false
+    }
     for ($i = $all.Count - 1; $i -ge 0; $i--) {
         $e = $all[$i]
         if (-not ($mine -contains $e)) { continue }
+        if ($e.kind -eq 'file' -or $e.kind -eq 'folder' -or $e.kind -eq 'rmini') {
+            if (-not (Test-InRoots ([string]$e.path) -AllowRoot:($e.kind -eq 'folder'))) {
+                Say 'WARN' "refused $($e.path): it is outside the Rainmeter skins, Rainmeter settings and deskforge state folders"
+                $warns++; continue
+            }
+        }
         switch ($e.kind) {
             'file' {
                 if (Test-Path -LiteralPath $e.path) {

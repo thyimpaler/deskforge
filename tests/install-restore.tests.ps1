@@ -39,6 +39,8 @@ try {
     New-Item -ItemType Directory -Force "$root\RainmeterSettings", "$root\Skins\SomeoneElse" | Out-Null
     [IO.File]::WriteAllText("$root\RainmeterSettings\Rainmeter.ini", "[Rainmeter]`r`nSkinPath=x`r`n`r`n[SomeoneElse]`r`nActive=1`r`n", [Text.Encoding]::Unicode)
     [IO.File]::WriteAllText("$root\Skins\SomeoneElse\Other.ini", "[Rainmeter]`r`nUpdate=1000`r`n")
+    # a file outside every deskforge folder, which a tampered log will point at
+    [IO.File]::WriteAllText("$root\outside.txt", "not ours`r`n")
     # a file the install will overwrite, so it gets a backup that restore must put back
     New-Item -ItemType Directory -Force "$root\Skins\deskforge\Panel" | Out-Null
     [IO.File]::WriteAllText("$root\Skins\deskforge\Panel\Panel.ini", "[Rainmeter]`r`n; the user's own earlier Panel.ini`r`n")
@@ -104,12 +106,23 @@ try {
 
     # ---- a restore that stops half way keeps a log of exactly what is left
     $logPath = "$root\State\install-log.json"
+    # ... and a log entry that points outside the deskforge folders (here through ..) is refused, not deleted
+    $tampered = Get-Content -Raw $logPath | ConvertFrom-Json
+    $rogue = [pscustomobject]@{ phase = 'skins'; kind = 'file'; path = "$root\Skins\..\outside.txt"; sha256 = (Get-FileHash -Algorithm SHA256 "$root\outside.txt").Hash.ToLower(); backup = $null }
+    $tampered.entries = @($tampered.entries) + $rogue
+    [IO.File]::WriteAllText($logPath, ($tampered | ConvertTo-Json -Depth 6), (New-Object Text.UTF8Encoding($false)))
     $before = @((Get-Content -Raw $logPath | ConvertFrom-Json).entries)
     $lock = [IO.File]::Open("$root\Skins\deskforge\Now\Now.ini", 'Open', 'ReadWrite', 'None')
     try { $out = & $restore -TestRoot $root; $code = $LASTEXITCODE } finally { $lock.Close() }
     $after = @((Get-Content -Raw $logPath | ConvertFrom-Json).entries)
     Check 'restore stops with exit 1 on a locked file' ($code -eq 1 -and ($out -match '^ERROR'))
     Check 'log saved after each entry: undone entries are gone, the rest stay' (($after.Count -lt $before.Count) -and ($after.Count -gt 0) -and -not ($after | Where-Object { $_.phase -eq 'startup' }) -and [bool]($after | Where-Object { $_.path -like '*\Now\Now.ini' }))
+
+    Check 'a log entry outside the deskforge folders is refused and the file is kept' ((Test-Path "$root\outside.txt") -and [bool]($out -match '^WARN  refused .*outside\.txt'))
+    $clean = Get-Content -Raw $logPath | ConvertFrom-Json
+    $clean.entries = @($clean.entries | Where-Object { $_.path -notlike '*\outside.txt' })
+    [IO.File]::WriteAllText($logPath, ($clean | ConvertTo-Json -Depth 6), (New-Object Text.UTF8Encoding($false)))
+    $after = @($clean.entries)
 
     # ---- a file an earlier restore already put back (it matches its backup) is not "changed after install"
     $pe = $after | Where-Object { $_.path -like '*\Panel\Panel.ini' }

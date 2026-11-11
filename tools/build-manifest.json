@@ -318,7 +318,7 @@
                   },
                   {
                       "path":  "tools/restore.ps1",
-                      "sha256":  "ddebb105ad2c2dd92888efd06bed59f7b08c19865e1e0b8fdc4935f60395f61b"
+                      "sha256":  "9d73ad43f03968c79dbb24ada5eb9355011a9d19fd907e5ff88b168a2dd26c28"
                   },
                   {
                       "path":  "tools/strip-metadata.ps1",
@@ -418,7 +418,7 @@
                   },
                   {
                       "path":  "tests/install-restore.tests.ps1",
-                      "sha256":  "f6b6b9a81fe090cb69690aa6530a59d1cad12373e8cf838c996051ffeef43916"
+                      "sha256":  "81a4da81b2aaa2cbdcc2c27eb1f19b4d7b18132995c96a6ff9bb1b122297ea2f"
                   },
                   {
                       "path":  "tests/items.tests.ps1",
