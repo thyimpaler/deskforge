@@ -54,4 +54,5 @@ You are helping a person set up a Windows desk with deskforge. **The person make
 ```powershell
 .\tests\run-all.ps1      # parse, schema, items, install and restore in a temp folder, privacy, no capture APIs
 node tests\site.test.mjs # site validator against the same fixtures
+node tests\site-app.test.mjs # the configurator page itself, against a stand-in DOM
 ```

@@ -15,7 +15,7 @@ Thanks for helping. Keep it small, private by default, and light on CPU.
 
 ## Pull request checklist
 
-- [ ] `.\tests\run-all.ps1` passes and `node tests\site.test.mjs` passes.
+- [ ] `.\tests\run-all.ps1` passes and `node tests\site.test.mjs` and `node tests\site-app.test.mjs` pass.
 - [ ] Every new skin, theme or addon folder has `README.md` (look, settings, CPU cost) and `screenshot.png`
       under 300 KB with metadata stripped (`tools\strip-metadata.ps1 -Path .`).
 - [ ] The privacy scan is clean: no names, emails, user paths, coordinates of real homes, keys or tokens.
