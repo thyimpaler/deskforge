@@ -1,0 +1,28 @@
+{
+  "comment": "M1 intake allowlist. Source paths are relative to -SourceRoot (a Rainmeter skins config folder). Only these files are ever copied. Nothing else is read into the repo.",
+  "files": [
+    { "from": "Panel/Panel.ini",            "to": "skins/panel/Panel.ini" },
+    { "from": "Now/Now.ini",                "to": "skins/now/Now.ini" },
+    { "from": "Dock/Dock.ini",              "to": "skins/dock/Dock.ini" },
+    { "from": "Home/Home.ini",              "to": "skins/home/Home.ini" },
+    { "from": "Boot/Boot.ini",              "to": "skins/boot/Boot.ini" },
+    { "from": "Tape/Tape.ini",              "to": "addons/tape/Tape.ini" },
+    { "from": "Depth/Depth.ini",            "to": "addons/depth/Depth.ini" },
+    { "from": "Wave/Wave.ini",              "to": "addons/wave/Wave.ini" },
+    { "from": "Mood/Mood.ini",              "to": "addons/mood/Mood.ini" },
+    { "from": "Alert/Alert.ini",            "to": "addons/alert/Alert.ini" },
+    { "from": "@Resources/mood.png",        "to": "addons/mood/mood.png" },
+    { "from": "@Resources/nowplaying.cs",   "to": "helpers/nowplaying.cs" },
+    { "from": "@Resources/dock.cs",         "to": "helpers/dock.cs" },
+    { "from": "@Resources/market.cs",       "to": "helpers/market.cs" }
+  ],
+  "neverCopied": [
+    "logs, caches, state files (*.txt, *.inc written at run time)",
+    "compiled helpers (*.exe)",
+    "Rainmeter backups (*.rmskin) and the real desk config",
+    "the countdown overlay skin and any camera or gesture code",
+    "wallpapers, avatars, personal screenshots and photos",
+    "restore and backup folders from earlier desk work",
+    "anything outside -SourceRoot, and all git history"
+  ]
+}

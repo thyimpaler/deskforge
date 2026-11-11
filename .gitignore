@@ -1,0 +1,25 @@
+# Personal config: never committed
+config/desk.json
+
+# Owner-only privacy list: never committed
+tests/privacy/banned-terms.local.txt
+
+# Compiled helpers and build output
+*.exe
+*.pdb
+build/
+out/
+
+# Test and install leftovers
+.test-root/
+install-log.json
+*.log
+
+# Archives and Rainmeter backups
+*.zip
+*.rmskin
+
+# Editor and OS clutter
+.vscode/
+Thumbs.db
+desktop.ini
