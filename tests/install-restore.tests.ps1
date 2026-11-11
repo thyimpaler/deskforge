@@ -39,6 +39,9 @@ try {
     New-Item -ItemType Directory -Force "$root\RainmeterSettings", "$root\Skins\SomeoneElse" | Out-Null
     [IO.File]::WriteAllText("$root\RainmeterSettings\Rainmeter.ini", "[Rainmeter]`r`nSkinPath=x`r`n`r`n[SomeoneElse]`r`nActive=1`r`n", [Text.Encoding]::Unicode)
     [IO.File]::WriteAllText("$root\Skins\SomeoneElse\Other.ini", "[Rainmeter]`r`nUpdate=1000`r`n")
+    # a file the install will overwrite, so it gets a backup that restore must put back
+    New-Item -ItemType Directory -Force "$root\Skins\deskforge\Panel" | Out-Null
+    [IO.File]::WriteAllText("$root\Skins\deskforge\Panel\Panel.ini", "[Rainmeter]`r`n; the user's own earlier Panel.ini`r`n")
     $seedReg = [ordered]@{
         'HKCU:\Control Panel\Desktop|TileWallpaper'  = '0'
         'HKCU:\Control Panel\Desktop|WallPaper'      = 'X:\seed\wallpaper.jpg'
@@ -86,6 +89,20 @@ try {
     $reg2 = Get-Content -Raw "$root\registry.json" | ConvertFrom-Json
     Check 'wallpaper values back, startup value kept' (($reg2.'HKCU:\Control Panel\Desktop|WallPaper' -eq 'X:\seed\wallpaper.jpg') -and ($reg2.'HKCU:\Control Panel\Desktop|WallpaperStyle' -eq '2') -and ($null -ne $reg2.'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run|deskforge'))
     Check 'panel still installed after partial restore' (Test-Path "$root\Skins\deskforge\Panel\Panel.ini")
+
+    # ---- a restore that stops half way keeps a log of exactly what is left
+    $logPath = "$root\State\install-log.json"
+    $before = @((Get-Content -Raw $logPath | ConvertFrom-Json).entries)
+    $lock = [IO.File]::Open("$root\Skins\deskforge\Now\Now.ini", 'Open', 'ReadWrite', 'None')
+    try { $out = & $restore -TestRoot $root; $code = $LASTEXITCODE } finally { $lock.Close() }
+    $after = @((Get-Content -Raw $logPath | ConvertFrom-Json).entries)
+    Check 'restore stops with exit 1 on a locked file' ($code -eq 1 -and ($out -match '^ERROR'))
+    Check 'log saved after each entry: undone entries are gone, the rest stay' (($after.Count -lt $before.Count) -and ($after.Count -gt 0) -and -not ($after | Where-Object { $_.phase -eq 'startup' }) -and [bool]($after | Where-Object { $_.path -like '*\Now\Now.ini' }))
+
+    # ---- a file an earlier restore already put back (it matches its backup) is not "changed after install"
+    $pe = $after | Where-Object { $_.path -like '*\Panel\Panel.ini' }
+    Check 'overwritten file has a backup in the log' ([bool]$pe -and [bool]$pe.backup -and (Test-Path -LiteralPath $pe.backup))
+    Copy-Item -LiteralPath $pe.backup $pe.path -Force
 
     # ---- full restore
     $out = & $restore -TestRoot $root

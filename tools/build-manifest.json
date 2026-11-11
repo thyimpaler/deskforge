@@ -314,7 +314,7 @@
                   },
                   {
                       "path":  "tools/restore.ps1",
-                      "sha256":  "8701fe7a1dda5ec01c96c21f0d6afb68cf458d29f23b41eabfa9b2df0b50f3a3"
+                      "sha256":  "ddebb105ad2c2dd92888efd06bed59f7b08c19865e1e0b8fdc4935f60395f61b"
                   },
                   {
                       "path":  "tools/strip-metadata.ps1",

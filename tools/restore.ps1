@@ -27,24 +27,39 @@ try {
     if (Test-IsAdmin) { throw 'refusing to run as administrator. Open a normal PowerShell window and run it again.' }
     $ctx = New-DeskContext -TestRoot $TestRoot
     if (-not (Test-Path $ctx.LogPath)) { throw "nothing to restore: $($ctx.LogPath) not found" }
-    $log = Get-Content -Raw $ctx.LogPath | ConvertFrom-Json
+    $rawLog = [IO.File]::ReadAllText($ctx.LogPath)
+    $log = $rawLog | ConvertFrom-Json
     $all = @($log.entries)
     $mine = @($all | Where-Object { $Phase -eq 'all' -or $_.phase -eq $Phase })
     $prefix = if ($DryRun) { 'PLAN' } else { 'DONE' }
     Say 'INFO' "deskforge restore, phase $Phase, $(if ($DryRun) { 'DRY RUN' } else { 'APPLY' }), $($mine.Count) entr$(if ($mine.Count -eq 1) { 'y' } else { 'ies' })"
 
     $touchSkins = ($Phase -eq 'all' -or $Phase -eq 'skins' -or $Phase -eq 'helpers')
-    if (-not $ctx.Test -and -not $DryRun -and $touchSkins -and (Test-RainmeterRunning) -and $ctx.RainmeterExe) {
-        foreach ($c in 'Panel', 'Now', 'Dock', 'Home', 'Boot', 'Tape', 'Depth', 'Wave', 'Mood', 'Alert') { & $ctx.RainmeterExe '!DeactivateConfig' "deskforge\$c" }
-        Start-Sleep -Seconds 1
-        # stop only our own helpers, found by their path inside the deskforge config folder
-        Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.Path -and $_.Path.StartsWith($ctx.Resources, [StringComparison]::OrdinalIgnoreCase) } |
-            ForEach-Object { Say 'DONE' "stopped helper $($_.Path)"; Stop-Process -Id $_.Id -Force }
-        Start-Sleep -Milliseconds 500
+    if (-not $ctx.Test -and -not $DryRun -and $touchSkins) {
+        if ((Test-RainmeterRunning) -and $ctx.RainmeterExe) {
+            foreach ($c in 'Panel', 'Now', 'Dock', 'Home', 'Boot', 'Tape', 'Depth', 'Wave', 'Mood', 'Alert') { & $ctx.RainmeterExe '!DeactivateConfig' "deskforge\$c" }
+            Start-Sleep -Seconds 1
+        }
+        # Stop only our own helpers, found by their path inside the deskforge config folder. This runs whether or
+        # not Rainmeter is running: a helper can outlive Rainmeter and would keep its exe locked.
+        $resDir = $ctx.Resources.TrimEnd('\') + '\'
+        $stopped = 0
+        Get-Process -ErrorAction SilentlyContinue | Where-Object { $_.Path -and $_.Path.StartsWith($resDir, [StringComparison]::OrdinalIgnoreCase) } |
+            ForEach-Object { Say 'DONE' "stopped helper $($_.Path)"; Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue; $stopped++ }
+        if ($stopped) { Start-Sleep -Milliseconds 500 }
     }
 
     $warns = 0
     $done = New-Object System.Collections.Generic.HashSet[int]
+    # The log is rewritten after every undone entry, so a restore that stops half way leaves a log that lists
+    # exactly what is still installed.
+    function Save-Progress([int]$index) {
+        $null = $done.Add($index)
+        if ($DryRun) { return }
+        $left = @(); for ($j = 0; $j -lt $all.Count; $j++) { if (-not $done.Contains($j)) { $left += $all[$j] } }
+        $log.entries = $left
+        Write-DeskText $ctx.LogPath ($log | ConvertTo-Json -Depth 6)
+    }
     for ($i = $all.Count - 1; $i -ge 0; $i--) {
         $e = $all[$i]
         if (-not ($mine -contains $e)) { continue }
@@ -52,13 +67,19 @@ try {
             'file' {
                 if (Test-Path -LiteralPath $e.path) {
                     $h = Get-FileSha256 $e.path
+                    $hasBackup = ($e.backup -and (Test-Path -LiteralPath $e.backup))
+                    if ($h -ne $e.sha256 -and $hasBackup -and $h -eq (Get-FileSha256 $e.backup)) {
+                        # an earlier restore already put this file back and stopped before the log was saved
+                        Say 'INFO' ("{0,-9} already restored  {1}" -f $e.phase, $e.path)
+                        Save-Progress $i; continue
+                    }
                     if ($h -ne $e.sha256 -and -not ($e.PSObject.Properties.Name -contains 'volatile' -and $e.volatile)) { Say 'WARN' "kept $($e.path): it changed after install"; $warns++; continue }
                     if (-not $DryRun) {
-                        if ($e.backup -and (Test-Path -LiteralPath $e.backup)) { Copy-Item -LiteralPath $e.backup $e.path -Force } else { Remove-Item -LiteralPath $e.path -Force }
+                        if ($hasBackup) { Copy-Item -LiteralPath $e.backup $e.path -Force } else { Remove-Item -LiteralPath $e.path -Force }
                     }
                     Say $prefix ("{0,-9} {1}  {2}" -f $e.phase, $(if ($e.backup) { 'put back' } else { 'removed ' }), $e.path)
                 }
-                $null = $done.Add($i)
+                Save-Progress $i
             }
             'folder' {
                 if ($Phase -ne 'all') { continue }
@@ -70,14 +91,14 @@ try {
                     if (-not $DryRun) { Remove-Item -LiteralPath $e.path -Force }
                     Say $prefix "folder    removed  $($e.path)"
                 }
-                $null = $done.Add($i)
+                Save-Progress $i
             }
             'registry' {
                 if (-not $DryRun) {
                     if ($e.before.exists) { Set-DeskReg $ctx $e.path $e.name ([string]$e.before.value) } else { Remove-DeskReg $ctx $e.path $e.name }
                 }
                 Say $prefix ("{0,-9} registry {1}\{2} -> {3}" -f $e.phase, $e.path, $e.name, $(if ($e.before.exists) { $e.before.value } else { '(removed)' }))
-                $null = $done.Add($i)
+                Save-Progress $i
             }
             'rmini' {
                 if (-not $DryRun) {
@@ -95,7 +116,7 @@ try {
                     elseif (Test-Path -LiteralPath $e.path) { Remove-Item -LiteralPath $e.path -Force }
                 }
                 Say $prefix "skins     Rainmeter.ini put back from $(if ($e.existed) { $e.backup } else { '(none: removed)' })"
-                $null = $done.Add($i)
+                Save-Progress $i
             }
         }
     }
@@ -109,7 +130,9 @@ try {
         $left = @(); for ($i = 0; $i -lt $all.Count; $i++) { if (-not $done.Contains($i)) { $left += $all[$i] } }
         if ($Phase -eq 'all' -and $warns -eq 0) {
             $dest = Join-Path $log.backup ('install-log.restored-{0}.json' -f (Get-Date -Format 'yyyyMMdd-HHmmss'))
-            Move-Item -LiteralPath $ctx.LogPath $dest
+            # the kept copy is the log as it was before this run, so it still lists what was installed
+            Write-DeskText $dest $rawLog
+            Remove-Item -LiteralPath $ctx.LogPath -Force
             Say 'DONE' "log moved to $dest"
         }
         else {
