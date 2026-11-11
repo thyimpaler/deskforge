@@ -12,7 +12,11 @@
 //   dock.exe alert "TITLE" "BODY"   show the alert band once (needs the alert addon).
 // Apps come from @Resources\apps.txt (name|path, written by install.ps1 from homeApps in desk.json).
 // Colours come from @Resources\theme.inc, the dock edge and switches from @Resources\desk.inc.
-// No keyboard hooks: only RegisterHotKey. No network. Exits when Rainmeter closes.
+// No keyboard hook exists anywhere in this file: nothing here can see what you type. The two hotkeys come
+// from RegisterHotKey, which only reports those exact combinations.
+// One place sends input: "dock.exe search" calls keybd_event to send a synthetic Win+S keystroke (four key
+// events), so Windows opens its own search. It sends keys; it does not read them.
+// No network. Exits when Rainmeter closes.
 // Build: helpers\build.ps1 (csc /target:winexe /r:System.Management.dll, C# 5, .NET Framework 4)
 using System;
 using System.Collections.Generic;
@@ -397,9 +401,14 @@ static class Dock
             if (m.Msg == BarMsg && m.WParam.ToInt32() == 1) BarSetPos();
             if (m.Msg == 0x0312)
             {
-                int id = m.WParam.ToInt32();
-                if (id == 1) ToggleHome();
-                else if (id == 2) HideHome();
+                // A hotkey must never take the helper down: a failed bang (Rainmeter busy or closing) is dropped.
+                try
+                {
+                    int id = m.WParam.ToInt32();
+                    if (id == 1) ToggleHome();
+                    else if (id == 2) HideHome();
+                }
+                catch { }
             }
             base.WndProc(ref m);
         }
