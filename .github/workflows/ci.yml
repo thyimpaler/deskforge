@@ -1,0 +1,41 @@
+# Written in Stage 1 and not pushed. Runs only after the owner approves the push.
+name: ci
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install PSScriptAnalyzer
+        shell: powershell
+        run: Install-Module PSScriptAnalyzer -Scope CurrentUser -Force
+      - name: PSScriptAnalyzer (errors fail)
+        shell: powershell
+        run: |
+          $r = Invoke-ScriptAnalyzer -Path . -Recurse -Severity Error
+          $r | Format-Table -AutoSize
+          if ($r) { exit 1 }
+      - name: Test suite (parse, schema, items, install and restore in a temp folder, privacy, no capture APIs, metadata)
+        shell: powershell
+        run: .\tests\run-all.ps1 -Ci
+      - name: Site tests
+        run: node tests/site.test.mjs
+      - name: Site data up to date
+        shell: powershell
+        run: .\tools\build-site-data.ps1 -Check
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

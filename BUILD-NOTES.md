@@ -48,7 +48,7 @@ Choices made where the plan was open or unclear. Each one takes the simpler opti
 ## M3 dock, home, now, boot and helpers
 
 - No camera code: the countdown overlay skin and its camera script were never copied, and
-  `tests/no-camera.ps1` fails on any capture API name in code (checked to fail on a probe file).
+  `tests/capture-check.ps1` fails on any capture API name in code (checked to fail on a probe file).
 - The dock helper reads apps from `@Resources\apps.txt` (from `homeApps`), colours from `theme.inc`, and the
   dock edge and switches from `desk.inc`. Personal app lists, watched support-desk and chat tabs, and browser
   profile arguments are gone. Any pinned app whose title starts with an unread count like `(3)` shows it, and
@@ -96,3 +96,27 @@ Choices made where the plan was open or unclear. Each one takes the simpler opti
   screenshot was clipped by headless Chrome's minimum window width, so 390 px was judged by the in-page check
   at 375 px instead.
 - Download itself (the browser save dialog) was not exercised end to end; the Blob path ran without errors.
+
+## M6 docs, agent rules and CI
+
+- README opens with the "Give this to your Claude" block. It names the repo and AGENTS.md instead of a raw
+  GitHub URL, because the URL would carry the owner's handle and nothing is pushed yet. Add the URL at push time.
+- AGENTS.md holds the hard rules (ask before any machine change, dry run first and shown, never admin, never
+  disable or uninstall, no data sent, no secrets) and the step list. CLAUDE.md is one line pointing at it.
+- LICENSE is MIT, copyright "deskforge contributors" (no personal name). SECURITY.md points to GitHub private
+  vulnerability reporting, no email address.
+- `.github/workflows/ci.yml` is written, not pushed: PSScriptAnalyzer (errors fail), `tests/run-all.ps1 -Ci`,
+  the site tests, the site data check, and gitleaks. It has never run.
+- `tools/verify.ps1` writes and checks `tools/build-manifest.json` (SHA-256 of every shipped skin, addon, theme,
+  helper and tool file).
+- `tests/run-all.ps1` runs the local suite. The capture-API check was renamed `capture-check.ps1` so its own
+  name does not trip it.
+
+## Not done in Stage 1 (needs the owner or later stages)
+
+- Windows Sandbox install and restore (Sandbox not enabled; enabling it changes the machine).
+- Rainmeter skin load test and Rainmeter.log check (would touch the owner's running Rainmeter).
+- PSScriptAnalyzer and gitleaks (not installed locally; both are in the CI file).
+- CPU, scaling at 125 and 150 percent, and the demo GIF (Stage 4 on the owner's laptop).
+- Owner review of every image by eye. All images are generated renders except `addons/mood/mood.png`
+  (a plain gradient from the source).

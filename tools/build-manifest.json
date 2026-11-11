@@ -1,0 +1,328 @@
+{
+    "skins":  [
+                  {
+                      "name":  "boot",
+                      "folder":  "skins/boot/",
+                      "files":  [
+                                    {
+                                        "path":  "skins/boot/Boot.ini",
+                                        "sha256":  "b990f78e1ae26ab5036cd892296bea643c671a4baca91e07705ccc3099622397"
+                                    },
+                                    {
+                                        "path":  "skins/boot/README.md",
+                                        "sha256":  "62f082a08a991e9a77c774ea6dd2cf16afacd6d83350c2400ee588ec8d05cb30"
+                                    },
+                                    {
+                                        "path":  "skins/boot/screenshot.png",
+                                        "sha256":  "2976b7185459b92fe6f2db56252bb3c1a3646beb77d7750d7beafa90d64f0208"
+                                    }
+                                ]
+                  },
+                  {
+                      "name":  "dock",
+                      "folder":  "skins/dock/",
+                      "files":  [
+                                    {
+                                        "path":  "skins/dock/Dock.ini",
+                                        "sha256":  "78e390c53ba7450ee7e3da02bbe2c65625a872fda2c43ee47a42564ae2e7808b"
+                                    },
+                                    {
+                                        "path":  "skins/dock/README.md",
+                                        "sha256":  "674ec0b2057ba292d51b5e6683189b17485522e042bdf0a35cb253dbec446e61"
+                                    },
+                                    {
+                                        "path":  "skins/dock/screenshot.png",
+                                        "sha256":  "468d3af6674285327adb9feb6382520278f281c1f5616087b7191e697403587e"
+                                    }
+                                ]
+                  },
+                  {
+                      "name":  "home",
+                      "folder":  "skins/home/",
+                      "files":  [
+                                    {
+                                        "path":  "skins/home/Home.ini",
+                                        "sha256":  "a8d9ede1c86f78ed164b314918636ea8efec8640b08c775431e011f84837c500"
+                                    },
+                                    {
+                                        "path":  "skins/home/README.md",
+                                        "sha256":  "a4096e946533f8bb4121c2ce5ccd14c2f6d6a83283302219254f4ba6a70dbdeb"
+                                    },
+                                    {
+                                        "path":  "skins/home/screenshot.png",
+                                        "sha256":  "add34ab89da162cef74cc1f1cc729900180d42910b2f8765172150e9594e7aff"
+                                    }
+                                ]
+                  },
+                  {
+                      "name":  "now",
+                      "folder":  "skins/now/",
+                      "files":  [
+                                    {
+                                        "path":  "skins/now/Now.ini",
+                                        "sha256":  "fc74acf17b1a2c95c8bf9469a6e14c8d584a67b10693df5dcf321023a7485342"
+                                    },
+                                    {
+                                        "path":  "skins/now/README.md",
+                                        "sha256":  "80e01a8fe58f286e1d13f9589eccd7bed8409b0b62bb8fb00c690c8820c080b0"
+                                    },
+                                    {
+                                        "path":  "skins/now/screenshot.png",
+                                        "sha256":  "276e5b0aae647913cb928a07ecbefa04c32ea2e165c2753c2cce95f4ab31097a"
+                                    }
+                                ]
+                  },
+                  {
+                      "name":  "panel",
+                      "folder":  "skins/panel/",
+                      "files":  [
+                                    {
+                                        "path":  "skins/panel/Panel.ini",
+                                        "sha256":  "dc8384c65792ab21e56ade1e0f7d3ffcbc1e5d11cda6f95f45798667a58b8925"
+                                    },
+                                    {
+                                        "path":  "skins/panel/README.md",
+                                        "sha256":  "962d8ba74a92e9974658a732bca0716724ec24d30577dda3be742897d639be08"
+                                    },
+                                    {
+                                        "path":  "skins/panel/screenshot.png",
+                                        "sha256":  "33ee5ed2aea4be57269ecbd83e82d6528bb99254c917cfe7ff98a3a273766cf5"
+                                    }
+                                ]
+                  }
+              ],
+    "addons":  [
+                   {
+                       "name":  "alert",
+                       "folder":  "addons/alert/",
+                       "files":  [
+                                     {
+                                         "path":  "addons/alert/Alert.ini",
+                                         "sha256":  "d27a79d84a213d4e1c8e165a98d306f0b700a20a86f9aff50f99aabefa1be164"
+                                     },
+                                     {
+                                         "path":  "addons/alert/README.md",
+                                         "sha256":  "d712bbaeedd04e0017b26945b54a983f95b392520b641e54b1f1076190a723eb"
+                                     },
+                                     {
+                                         "path":  "addons/alert/screenshot.png",
+                                         "sha256":  "a7814a5b44d26590fd95d56c97d868caa3b9fc798ed3f9fc1c2fa3f7d3873535"
+                                     }
+                                 ]
+                   },
+                   {
+                       "name":  "depth",
+                       "folder":  "addons/depth/",
+                       "files":  [
+                                     {
+                                         "path":  "addons/depth/Depth.ini",
+                                         "sha256":  "33fdf9ba555296d21b10cf2a9bb1eaaeac3892776190cafedccc45fc6c57c84e"
+                                     },
+                                     {
+                                         "path":  "addons/depth/README.md",
+                                         "sha256":  "b9e0004121daf2773a918bb2cd459242792eaa4c1f586419668dcb439e414075"
+                                     },
+                                     {
+                                         "path":  "addons/depth/screenshot.png",
+                                         "sha256":  "7bd0ac084451c6427bedd4fc6d1f1d3edee59c9946c960698636656ff780bc9e"
+                                     }
+                                 ]
+                   },
+                   {
+                       "name":  "mood",
+                       "folder":  "addons/mood/",
+                       "files":  [
+                                     {
+                                         "path":  "addons/mood/Mood.ini",
+                                         "sha256":  "e23c0dc4055e3e96985108ce4da87ba088271c9913cae83e06306cfb63ef0b8a"
+                                     },
+                                     {
+                                         "path":  "addons/mood/mood.png",
+                                         "sha256":  "f17a3430d2f7f767fd7bb3313bb5e537ed03ca78a0f0e3e0874e063db9853944"
+                                     },
+                                     {
+                                         "path":  "addons/mood/README.md",
+                                         "sha256":  "5b1ab8aa1cc9931454716b5df83fd78f250a994e57bc1ebe5d26b2d237a05e4f"
+                                     },
+                                     {
+                                         "path":  "addons/mood/screenshot.png",
+                                         "sha256":  "d0c7d2c0470d802e2b5b4be80897fc37088af9867a1f0f570123f4a428b1ab4b"
+                                     }
+                                 ]
+                   },
+                   {
+                       "name":  "tape",
+                       "folder":  "addons/tape/",
+                       "files":  [
+                                     {
+                                         "path":  "addons/tape/README.md",
+                                         "sha256":  "f05ce2c02c19cad4cb61eebb5ec390c3e6a431e754e785f83833094e16393aae"
+                                     },
+                                     {
+                                         "path":  "addons/tape/screenshot.png",
+                                         "sha256":  "33a2d8c48e0f62bd79591ed48852fd333fdf524d95024111f1cbf1ae7cf52d43"
+                                     },
+                                     {
+                                         "path":  "addons/tape/Tape.ini",
+                                         "sha256":  "0f89747ee4b073f5fe9931d3526249e4d093f5d07fb6ca11054a36df43dad9fc"
+                                     }
+                                 ]
+                   },
+                   {
+                       "name":  "wave",
+                       "folder":  "addons/wave/",
+                       "files":  [
+                                     {
+                                         "path":  "addons/wave/README.md",
+                                         "sha256":  "c9ccd163e4a25caba90c8f90b092dbde23de569faa53e0e962d7cb41e771251d"
+                                     },
+                                     {
+                                         "path":  "addons/wave/screenshot.png",
+                                         "sha256":  "8dab6941c4ecf26760ee62c1ef280cc8049704f694152785025967cf93ee3fb1"
+                                     },
+                                     {
+                                         "path":  "addons/wave/Wave.ini",
+                                         "sha256":  "041d77f6fb8f3ab46c195ac6dcf091f61c554d3bc34eef9ccc0191825477f011"
+                                     }
+                                 ]
+                   }
+               ],
+    "themes":  [
+                   {
+                       "name":  "minimal-grey",
+                       "folder":  "themes/minimal-grey/",
+                       "files":  [
+                                     {
+                                         "path":  "themes/minimal-grey/README.md",
+                                         "sha256":  "36f610dbc1809e2ff982d90e8ef769238aa32d37613defaeff7de862c4ba95fc"
+                                     },
+                                     {
+                                         "path":  "themes/minimal-grey/screenshot.png",
+                                         "sha256":  "2e4efc32135df2c242204e30bc7f9ecfa5be7186ec88f26c628570f20e9084fa"
+                                     },
+                                     {
+                                         "path":  "themes/minimal-grey/theme.json",
+                                         "sha256":  "9160bc0e513a5b19a3061a68dc59253c762c0803a3e51fea724d7d1ab2d408a6"
+                                     },
+                                     {
+                                         "path":  "themes/minimal-grey/wallpaper.png",
+                                         "sha256":  "39481f98f58e772958d652f9e634b968c30c79c1bbf72ae4da4c3b6b8d316c96"
+                                     }
+                                 ]
+                   },
+                   {
+                       "name":  "paper-light",
+                       "folder":  "themes/paper-light/",
+                       "files":  [
+                                     {
+                                         "path":  "themes/paper-light/README.md",
+                                         "sha256":  "96d32a5305dabcf1a3a0f0120fe40f47855f034a238f6f2625c43f4b2c711c63"
+                                     },
+                                     {
+                                         "path":  "themes/paper-light/screenshot.png",
+                                         "sha256":  "f42cb2c85efd6007ad86c2f2eb56969fbd94399ef373310ad0b9db2cf5918ce5"
+                                     },
+                                     {
+                                         "path":  "themes/paper-light/theme.json",
+                                         "sha256":  "31cda20d3a230f9828f866a0dca5046424f45ab313fa2d8b08ad250f0bc1841e"
+                                     },
+                                     {
+                                         "path":  "themes/paper-light/wallpaper.png",
+                                         "sha256":  "5dcafa036e92668eb311e2069b42749c6e51254642a3f992b6f5d69367b3c946"
+                                     }
+                                 ]
+                   },
+                   {
+                       "name":  "red-on-black",
+                       "folder":  "themes/red-on-black/",
+                       "files":  [
+                                     {
+                                         "path":  "themes/red-on-black/README.md",
+                                         "sha256":  "e7c6e0184345df7209881101094c5a3c0bee51f5549aea444f6391c710d96c59"
+                                     },
+                                     {
+                                         "path":  "themes/red-on-black/screenshot.png",
+                                         "sha256":  "7caf5c320433a9d1805dba02d351cf998164b952ca87d1091a8add9d7aa33297"
+                                     },
+                                     {
+                                         "path":  "themes/red-on-black/theme.json",
+                                         "sha256":  "b77658ca4a204e46c2a121f1c41045a0a8f9be50cd587980d52d46e3574f3d56"
+                                     },
+                                     {
+                                         "path":  "themes/red-on-black/wallpaper.png",
+                                         "sha256":  "15df3190387f90d071a681e65987915f7e9a2f9340e9c1c5d7999947a0bf2811"
+                                     }
+                                 ]
+                   },
+                   {
+                       "name":  "terminal-green",
+                       "folder":  "themes/terminal-green/",
+                       "files":  [
+                                     {
+                                         "path":  "themes/terminal-green/README.md",
+                                         "sha256":  "0c6ca91b00d38d8fe56847c69dc7eed5749fef20469ba3f6fc787fce3d200854"
+                                     },
+                                     {
+                                         "path":  "themes/terminal-green/screenshot.png",
+                                         "sha256":  "2e1a418065e4c01171ec83aab90e344327c7e0cf4721776a1175299fcf681430"
+                                     },
+                                     {
+                                         "path":  "themes/terminal-green/theme.json",
+                                         "sha256":  "4cc6651dbf6dab7688f9917340a61f2d38e4210a838c5dcc6ed300b3ae9a7280"
+                                     },
+                                     {
+                                         "path":  "themes/terminal-green/wallpaper.png",
+                                         "sha256":  "a7d40bf8c392250195910c05e097df8b940b19384863c4e9563424728284219e"
+                                     }
+                                 ]
+                   }
+               ],
+    "helpers":  [
+                    {
+                        "path":  "helpers/dock.cs",
+                        "sha256":  "ab1649a4397499376076098b6b3333bae48175d5fdeca95f44b67fb7ec6043d2"
+                    },
+                    {
+                        "path":  "helpers/market.cs",
+                        "sha256":  "d5ae349b9d8bab354291862b77d60207f0338ad30b8c8ad52dd128657f9418bb"
+                    },
+                    {
+                        "path":  "helpers/nowplaying.cs",
+                        "sha256":  "80a4cbddd84d1f95271b76063ac5009b111ae7122a0516ddf471bb9a5b5770c8"
+                    }
+                ],
+    "tools":  [
+                  {
+                      "path":  "tools/build-site-data.ps1",
+                      "sha256":  "2625860c937f4174f37f2899b50a2b25f72d36e80bda8bc4e0900ace884ca72c"
+                  },
+                  {
+                      "path":  "tools/desk-startup.ps1",
+                      "sha256":  "adbf25372da68eeab9f5270f18cc2f1a73af539a98b39b2d0fdeb88541ddd923"
+                  },
+                  {
+                      "path":  "tools/install.ps1",
+                      "sha256":  "f4c95244fdd54fdf34e86c44b4a11fbcf5f231877c9c6f3c9045f850d3c274e0"
+                  },
+                  {
+                      "path":  "tools/intake.ps1",
+                      "sha256":  "657512ce2753484080f815ba2617830e232e1460e0e0b9c91e064c392c75db7d"
+                  },
+                  {
+                      "path":  "tools/render-previews.ps1",
+                      "sha256":  "48c2fce61f27b1ceb3705c3f3c92119ce448346a89cfe2b8ed9a5ed29b190e3d"
+                  },
+                  {
+                      "path":  "tools/restore.ps1",
+                      "sha256":  "8701fe7a1dda5ec01c96c21f0d6afb68cf458d29f23b41eabfa9b2df0b50f3a3"
+                  },
+                  {
+                      "path":  "tools/strip-metadata.ps1",
+                      "sha256":  "812a64647a6dbaf272f62adecccecb6967956cfef1a2b393a15526d33bfae040"
+                  },
+                  {
+                      "path":  "tools/verify.ps1",
+                      "sha256":  "5f81eaecadd6568ce14af3a722161b65bfcd4864f862add66aae3f64dece622d"
+                  }
+              ]
+}
