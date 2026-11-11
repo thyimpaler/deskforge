@@ -302,7 +302,7 @@
                   },
                   {
                       "path":  "tools/desk-startup.ps1",
-                      "sha256":  "adbf25372da68eeab9f5270f18cc2f1a73af539a98b39b2d0fdeb88541ddd923"
+                      "sha256":  "c3932ba4d30352543dffdb2c2b7d9b02ade9ebd48e0b6a04291d9ee309914b95"
                   },
                   {
                       "path":  "tools/install.ps1",

@@ -6,7 +6,10 @@
   3. Starts Rainmeter if it is not running, and waits up to 60 s for the deskforge skins to load.
   4. Writes the boot line the panel shows (bootcheck.txt) and the values the boot reveal shows (bootseq.inc),
      then plays the boot reveal once if it is enabled. 5. Appends one line to startup-check.log.
-  It never kills, disables or uninstalls anything, and sends no data anywhere.
+  Network: at every sign-in it contacts api.open-meteo.com to see whether the PC is online. It asks for the
+  weather at latitude 0, longitude 0 (not your location), repeats every 5 s until one answer arrives or
+  2 minutes pass, and sends nothing else. Like any web request, that host sees your IP address.
+  It never kills, disables or uninstalls anything.
 #>
 [CmdletBinding()]
 param(
