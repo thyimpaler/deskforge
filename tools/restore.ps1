@@ -52,7 +52,7 @@ try {
             'file' {
                 if (Test-Path -LiteralPath $e.path) {
                     $h = Get-FileSha256 $e.path
-                    if ($h -ne $e.sha256) { Say 'WARN' "kept $($e.path): it changed after install"; $warns++; continue }
+                    if ($h -ne $e.sha256 -and -not ($e.PSObject.Properties.Name -contains 'volatile' -and $e.volatile)) { Say 'WARN' "kept $($e.path): it changed after install"; $warns++; continue }
                     if (-not $DryRun) {
                         if ($e.backup -and (Test-Path -LiteralPath $e.backup)) { Copy-Item -LiteralPath $e.backup $e.path -Force } else { Remove-Item -LiteralPath $e.path -Force }
                     }

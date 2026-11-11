@@ -75,6 +75,11 @@ try {
     $out = & $install -Config $cfgPath -TestRoot $root -Apply -SkipHelpers:$SkipHelpers
     Check 'second install refused while installed' ($LASTEXITCODE -eq 1 -and ($out -match 'already installed'))
 
+    # ---- the helpers and skins rewrite their run-time files while the desk runs
+    [IO.File]::WriteAllText("$root\Skins\deskforge\@Resources\dockstate.txt", "1|0|0|1`n")
+    [IO.File]::WriteAllText("$root\Skins\deskforge\@Resources\nowplaying.txt", "Song`nArtist")
+    Check 'home rows generated from homeApps' ((Get-Content "$root\Skins\deskforge\@Resources\home.inc" -Raw) -match 'Text=05  Task Manager')
+
     # ---- partial restore
     $out = & $restore -TestRoot $root -Phase wallpaper
     Check 'restore -Phase wallpaper exit 0, zero ERROR' ($LASTEXITCODE -eq 0 -and -not ($out -match '^ERROR')) ($out -join ' | ')

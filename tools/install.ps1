@@ -48,8 +48,8 @@ try {
 
     # ------------------------------------------------------------ build the plan
     $plan = New-Object System.Collections.Generic.List[object]
-    function Add-File([string]$phase, [string]$target, [string]$from, [string]$text, [switch]$Rm) {
-        $plan.Add(@{ phase = $phase; kind = 'file'; path = $target; from = $from; text = $text; rm = [bool]$Rm })
+    function Add-File([string]$phase, [string]$target, [string]$from, [string]$text, [switch]$Rm, [switch]$Volatile) {
+        $plan.Add(@{ phase = $phase; kind = 'file'; path = $target; from = $from; text = $text; rm = [bool]$Rm; volatile = [bool]$Volatile })
     }
     function Add-Reg([string]$phase, [string]$path, [string]$name, [string]$value) {
         $plan.Add(@{ phase = $phase; kind = 'registry'; path = $path; name = $name; value = $value })
@@ -63,6 +63,13 @@ try {
     Add-File 'skins' (Join-Path $ctx.Resources 'desk.inc') $null (New-DeskInc $cfg) -Rm
     Add-File 'skins' (Join-Path $ctx.Resources 'apps.txt') $null (New-AppsTxt $cfg)
     if ($cfg.skins.home) { Add-File 'skins' (Join-Path $ctx.Resources 'home.inc') $null (New-HomeInc $cfg) -Rm }
+    # run-time files the skins and helpers rewrite; created up front so Rainmeter never logs a missing file,
+    # and marked volatile so restore removes them even though their contents changed
+    Add-File 'skins' (Join-Path $ctx.Resources 'bootcheck.txt') $null 'ok|' -Volatile
+    Add-File 'skins' (Join-Path $ctx.Resources 'bootseq.inc') $null "[Variables]`r`n" -Volatile
+    Add-File 'skins' (Join-Path $ctx.Resources 'dockstate.txt') $null '' -Volatile
+    Add-File 'skins' (Join-Path $ctx.Resources 'nowplaying.txt') $null "`n" -Volatile
+    Add-File 'skins' (Join-Path $ctx.Resources 'alert.inc') $null "[Variables]`r`n" -Volatile
     Add-File 'theme' (Join-Path $ctx.Resources 'theme.inc') $null (New-ThemeInc $theme) -Rm
     $layoutFile = Join-Path $ctx.RmSettings 'Layouts\deskforge\Rainmeter.ini'
     Add-File 'skins' $layoutFile $null (New-LayoutIni $cfg) -Rm
@@ -141,7 +148,7 @@ try {
             'file' {
                 Confirm-Folder (Split-Path -Parent $a.path) $a.phase
                 if ($a.from) { Copy-Item -LiteralPath $a.from $a.path -Force } else { Write-DeskText $a.path $a.text -Rainmeter:$a.rm }
-                $e = [ordered]@{ phase = $a.phase; kind = 'file'; path = $a.path; sha256 = (Get-FileSha256 $a.path); backup = $a.backupCopy }
+                $e = [ordered]@{ phase = $a.phase; kind = 'file'; path = $a.path; sha256 = (Get-FileSha256 $a.path); backup = $a.backupCopy; volatile = $a.volatile }
                 Add-Entry $e; Say 'DONE' ("{0,-9} file  {1}" -f $a.phase, $a.path)
             }
             'helper' {

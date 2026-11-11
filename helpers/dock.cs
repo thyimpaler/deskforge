@@ -1,16 +1,19 @@
 // deskforge dock + home helper for the Rainmeter skins deskforge\Dock and deskforge\Home.
-//   dock.exe            main loop: tracks open windows, pushes labels/states to the dock,
-//                       hides the dock under true full-screen apps, owns the hotkeys
-//                       (Win+Z toggles Home, Esc closes Home while it is open).
-//   dock.exe act N      a dock slot was clicked: focus, minimize or launch.
-//   dock.exe go KEY     focus the app if it is open, otherwise launch it (used by Home).
-//   dock.exe search     close Home and open the Alt+Space launcher.
-//   dock.exe alerttest  show the alert band once (for testing).
-// Pinned apps whose window title starts with an unread count like (3) show that count; a rising count raises the Alert band.
-// No keyboard hooks, only RegisterHotKey. Exits when Rainmeter closes.
-//   dock.exe vol up|down|mute   change the master volume, then refresh the dock readout.
-//   dock.exe bri up|down        change the built-in screen brightness (10..100), then refresh.
-// Build: csc /target:winexe /r:System.Management.dll /out:dock.exe dock.cs   (C# 5, .NET Framework 4)
+//   dock.exe              main loop: tracks open windows, pushes labels and states to the dock,
+//                         hides the dock under true full-screen apps, reserves the dock strip as an AppBar,
+//                         owns the hotkeys (Win+Z toggles Home, Esc closes Home while it is open),
+//                         and plays the wake reveal after an unlock or resume when desk.inc turns it on.
+//   dock.exe act N        a dock slot was clicked: focus, minimize or launch.
+//   dock.exe go N         Home row N (1-based, from apps.txt): focus the app if open, otherwise launch it.
+//   dock.exe go lock|power
+//   dock.exe home|close   toggle or close Home.
+//   dock.exe search       close Home and open Windows search (Win+S).
+//   dock.exe vol up|down|mute, dock.exe bri up|down
+//   dock.exe alert "TITLE" "BODY"   show the alert band once (needs the alert addon).
+// Apps come from @Resources\apps.txt (name|path, written by install.ps1 from homeApps in desk.json).
+// Colours come from @Resources\theme.inc, the dock edge and switches from @Resources\desk.inc.
+// No keyboard hooks: only RegisterHotKey. No network. Exits when Rainmeter closes.
+// Build: helpers\build.ps1 (csc /target:winexe /r:System.Management.dll, C# 5, .NET Framework 4)
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,32 +23,60 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using Microsoft.Win32;
 
 static class Dock
 {
-    class App { public string Key, Label, Exe, Part, Cls, File, Args, Web, Tail; }
-    static App A(string key, string label, string exe, string part, string cls, string file, string args)
-    { return new App { Key = key, Label = label, Exe = exe, Part = part, Cls = cls, File = file, Args = args }; }
+    const string Cfg = "deskforge";
+    class App { public string Key, Label, Exe, Cls, File; }
 
-    static readonly string Local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-    static readonly string Roam = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-    const int Pinned = 5, Slots = 13;
+    static readonly string Res = AppDomain.CurrentDomain.BaseDirectory;
+    static List<App> Apps = new List<App>();
+    static int Pinned = 0;
+    const int Slots = 13;
+    static Dictionary<string, string> Theme = new Dictionary<string, string>();
+    static Dictionary<string, string> Desk = new Dictionary<string, string>();
 
-    // A watched site = an ordinary browser tab (the web interface, never an app window).
-    // Windows only exposes the title of a window's ACTIVE tab, so the count is known while the site is the
-    // tab in front in one of that browser's windows. Web = text that title contains. Clicking the dock entry
-    // focuses that window, or opens the site as a normal tab when no window is showing it.
-    static App WebApp(string key, string label, string exe, string part, string file, string args, string web, string tail)
-    { return new App { Key = key, Label = label, Exe = exe, Part = part, File = file, Args = args, Web = web, Tail = tail }; }
+    // ---------------------------------------------------------------- config files
+    static Dictionary<string, string> ReadVars(string name)
+    {
+        var d = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        try
+        {
+            foreach (var line in File.ReadAllLines(Path.Combine(Res, name)))
+            {
+                int i = line.IndexOf('=');
+                if (i > 0 && !line.StartsWith(";")) d[line.Substring(0, i).Trim()] = line.Substring(i + 1).Trim();
+            }
+        }
+        catch { }
+        return d;
+    }
+    static string V(Dictionary<string, string> d, string k, string def) { string v; return d.TryGetValue(k, out v) && v.Length > 0 ? v : def; }
 
-    // First `Pinned` entries are the dock, in order. The rest are known to Home and get clean labels in the overflow.
-    static readonly App[] Apps = {
-        A("files",    "FILES",    "explorer.exe", null, "CabinetWClass", "explorer.exe", ""),
-        A("notepad",  "NOTEPAD",  "notepad.exe", null, null, "notepad.exe", ""),
-        A("terminal", "TERMINAL", "windowsterminal.exe", null, null, "explorer.exe", "shell:AppsFolder\\Microsoft.WindowsTerminal_8wekyb3d8bbwe!App"),
-        A("settings", "SETTINGS", "\u0000", null, null, "ms-settings:", ""),
-        A("taskmgr",  "TASKS",    "taskmgr.exe", null, null, "taskmgr.exe", ""),
-    };
+    static void LoadConfig()
+    {
+        Theme = ReadVars("theme.inc");
+        Desk = ReadVars("desk.inc");
+        Apps = new List<App>();
+        try
+        {
+            int n = 0;
+            foreach (var raw in File.ReadAllLines(Path.Combine(Res, "apps.txt"), Encoding.UTF8))
+            {
+                if (raw.StartsWith("#") || raw.IndexOf('|') < 0) continue;
+                var p = raw.Split(new[] { '|' }, 2);
+                string path = p[1].Trim();
+                var a = new App { Key = (++n).ToString(), Label = Clean(p[0], 12), File = path, Exe = "\u0000" };
+                if (path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)) a.Exe = Path.GetFileName(path).ToLowerInvariant();
+                if (a.Exe == "explorer.exe") a.Cls = "CabinetWClass";
+                if (a.Exe == "wt.exe") a.Exe = "windowsterminal.exe";
+                Apps.Add(a);
+            }
+        }
+        catch { }
+        Pinned = Math.Min(Apps.Count, 10);
+    }
 
     // ---------------------------------------------------------------- win32
     delegate bool EnumProc(IntPtr h, IntPtr l);
@@ -55,7 +86,6 @@ static class Dock
     [DllImport("user32.dll")] static extern bool IsWindowVisible(IntPtr h);
     [DllImport("user32.dll")] static extern bool IsWindow(IntPtr h);
     [DllImport("user32.dll")] static extern bool IsIconic(IntPtr h);
-    [DllImport("user32.dll")] static extern bool IsZoomed(IntPtr h);
     [DllImport("user32.dll")] static extern IntPtr GetWindow(IntPtr h, uint cmd);
     [DllImport("user32.dll")] static extern int GetWindowLong(IntPtr h, int idx);
     [DllImport("user32.dll", CharSet = CharSet.Unicode)] static extern int GetWindowText(IntPtr h, StringBuilder s, int n);
@@ -76,14 +106,6 @@ static class Dock
     [DllImport("user32.dll")] static extern bool SetProcessDPIAware();
     [DllImport("user32.dll")] static extern bool SetWindowPos(IntPtr h, IntPtr after, int x, int y, int w, int hgt, uint flags);
     [DllImport("dwmapi.dll")] static extern int DwmGetWindowAttribute(IntPtr h, int attr, out int val, int size);
-    [DllImport("user32.dll")] static extern bool SystemParametersInfo(uint a, uint b, ref RECT r, uint f);
-    // Low-level keyboard hook: ONLY used to see a lone Win key press (no other key in between).
-    delegate IntPtr HookProc(int code, IntPtr w, IntPtr l);
-    [StructLayout(LayoutKind.Sequential)] struct KBD { public uint vk, scan, flags, time; public IntPtr extra; }
-    [DllImport("user32.dll")] static extern IntPtr SetWindowsHookEx(int id, HookProc fn, IntPtr mod, uint thread);
-    [DllImport("user32.dll")] static extern IntPtr CallNextHookEx(IntPtr h, int code, IntPtr w, IntPtr l);
-    [DllImport("user32.dll")] static extern bool UnhookWindowsHookEx(IntPtr h);
-    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)] static extern IntPtr GetModuleHandle(string name);
     [DllImport("kernel32.dll")] static extern IntPtr OpenProcess(uint access, bool inherit, uint pid);
     [DllImport("kernel32.dll")] static extern bool CloseHandle(IntPtr h);
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode)] static extern bool QueryFullProcessImageName(IntPtr h, uint flags, StringBuilder s, ref int size);
@@ -140,18 +162,11 @@ static class Dock
     static bool Match(App a, Win w)
     {
         if (w.Exe != a.Exe) return false;
-        if (a.Part != null && w.Path.ToLowerInvariant().IndexOf(a.Part, StringComparison.Ordinal) < 0) return false;
         if (a.Cls != null && w.Cls != a.Cls) return false;
-        if (a.Web != null) return IsWeb(a, w);
         return true;
     }
 
-    static bool IsWeb(App a, Win w)
-    {
-        return w.Title.IndexOf(a.Web, StringComparison.OrdinalIgnoreCase) >= 0;
-    }
-
-    // Unread count from a title like "(5) Discord | #general" or "(12+) Mail". 0 when there is none.
+    // Unread count from a title like "(5) Inbox" or "[12+] Chat". 0 when there is none.
     static int Unread(string title)
     {
         var m = System.Text.RegularExpressions.Regex.Match(title, @"^\s*[\(\[](\d+)\+?[\)\]]");
@@ -159,21 +174,15 @@ static class Dock
     }
 
     static readonly Dictionary<string, int> lastUnread = new Dictionary<string, int>();
-    static System.Media.SoundPlayer alertSound;
 
-    static void Alert(string title, int n)
+    static void Alert(string title, string body)
     {
+        if (V(Desk, "AddonAlert", "0") != "1") return;
         try
         {
-            string dir = AppDomain.CurrentDomain.BaseDirectory;
-            File.WriteAllText(Path.Combine(dir, "alert.inc"), "[Variables]\r\nATitle=" + title + "\r\nABody=" + n + (n == 1 ? " UNREAD MESSAGE" : " UNREAD MESSAGES") + "\r\n", Encoding.ASCII);
-            Bang(FindSkin("\\Alert\\Alert.ini") != IntPtr.Zero ? "[!Refresh \"deskforge\\Alert\"]" : "[!ActivateConfig \"deskforge\\Alert\" \"Alert.ini\"]");
-            if (alertSound == null)
-            {
-                string wav = Environment.ExpandEnvironmentVariables("%WINDIR%\\Media\\Windows Notify Messaging.wav");
-                if (File.Exists(wav)) alertSound = new System.Media.SoundPlayer(wav);
-            }
-            if (alertSound != null) alertSound.Play(); else System.Media.SystemSounds.Asterisk.Play();
+            File.WriteAllText(Path.Combine(Res, "alert.inc"), "[Variables]\r\nATitle=" + Clean(title, 24) + "\r\nABody=" + Clean(body, 40) + "\r\n", Encoding.ASCII);
+            Bang(FindSkin("\\Alert\\Alert.ini") != IntPtr.Zero ? "[!Refresh \"" + Cfg + "\\Alert\"]" : "[!ActivateConfig \"" + Cfg + "\\Alert\" \"Alert.ini\"]");
+            System.Media.SystemSounds.Asterisk.Play();
         }
         catch { }
     }
@@ -202,40 +211,38 @@ static class Dock
         return sb.ToString().Trim();
     }
 
-    static string StateFile { get { return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "dockstate.txt"); } }
+    static string StateFile { get { return Path.Combine(Res, "dockstate.txt"); } }
 
-    // ---------------------------------------------------------------- main loop
+    // ---------------------------------------------------------------- main loop state
     static IntPtr lastFg = IntPtr.Zero;
     static string lastSig = null;
     static bool lastFull = false, escOn = false;
     static int tick = 0;
     static Host host;
 
-    // ---------------------------------------------------------------- home toggle (no fade: fades tear on the HD 5500)
-    static bool HomeOpen()
-    {
-        bool hv; Snapshot(out hv); return hv;
-    }
-    static void ShowHome() { Bang("[!Hide \"deskforge\\Dock\"][!Hide \"deskforge\\Wave\"][!Show \"deskforge\\Home\"][!ZPos 2 \"deskforge\\Home\"]"); }
-    static void HideHome() { Bang("[!Hide \"deskforge\\Home\"]" + (lastFull ? "" : "[!Show \"deskforge\\Dock\"][!Show \"deskforge\\Wave\"]")); }
+    // ---------------------------------------------------------------- home toggle (no fades: they tear on weak GPUs)
+    static bool HomeOpen() { bool hv; Snapshot(out hv); return hv; }
+    static void ShowHome() { Bang("[!Hide \"" + Cfg + "\\Dock\"][!Hide \"" + Cfg + "\\Wave\"][!Show \"" + Cfg + "\\Home\"][!ZPos 2 \"" + Cfg + "\\Home\"]"); }
+    static void HideHome() { Bang("[!Hide \"" + Cfg + "\\Home\"]" + (lastFull ? "" : "[!Show \"" + Cfg + "\\Dock\"][!Show \"" + Cfg + "\\Wave\"]")); }
     static void ToggleHome() { if (HomeOpen()) HideHome(); else ShowHome(); }
 
-    // ---------------------------------------------------------------- work area: keep 56px for the dock
+    // ---------------------------------------------------------------- the dock strip is reserved as an AppBar
+    // Registering the helper's window as an AppBar lets Explorer keep the work area itself.
+    // Changing the work area directly fights Explorer and makes windows jump.
     const int DockH = 56;
-    // The dock space is reserved the official way: the helper's window is registered as an AppBar
-    // on the bottom edge, so Explorer itself keeps the work area. No more fighting over it.
     [StructLayout(LayoutKind.Sequential)] struct APPBARDATA { public int cbSize; public IntPtr hWnd; public uint uCallbackMessage; public uint uEdge; public RECT rc; public IntPtr lParam; }
     [DllImport("shell32.dll")] static extern IntPtr SHAppBarMessage(uint msg, ref APPBARDATA d);
     const int BarMsg = 0x0400 + 77;
     static bool barOn = false;
+    static bool Top { get { return V(Desk, "DockEdge", "bottom") == "top"; } }
     static void BarSetPos()
     {
         var b = Screen.PrimaryScreen.Bounds;
-        var d = new APPBARDATA { hWnd = host.Handle, uEdge = 3 };
+        var d = new APPBARDATA { hWnd = host.Handle, uEdge = Top ? 1u : 3u };
         d.cbSize = Marshal.SizeOf(typeof(APPBARDATA));
-        d.rc = new RECT { L = b.Left, T = b.Bottom - DockH, R = b.Right, B = b.Bottom };
+        d.rc = Top ? new RECT { L = b.Left, T = b.Top, R = b.Right, B = b.Top + DockH } : new RECT { L = b.Left, T = b.Bottom - DockH, R = b.Right, B = b.Bottom };
         SHAppBarMessage(2, ref d);                       // ABM_QUERYPOS
-        d.rc.T = d.rc.B - DockH;
+        if (Top) d.rc.B = d.rc.T + DockH; else d.rc.T = d.rc.B - DockH;
         SHAppBarMessage(3, ref d);                       // ABM_SETPOS
     }
     static void EnforceWorkArea(bool reserve)
@@ -256,34 +263,21 @@ static class Dock
             barOn = false;
         }
     }
-    // ---------------------------------------------------------------- lone Win key -> Home
-    static IntPtr hook = IntPtr.Zero; static HookProc hookFn;
-    static bool winDown = false, winCombo = false;
-    static IntPtr KeyHook(int code, IntPtr w, IntPtr l)
+
+    // ---------------------------------------------------------------- wake reveal
+    static DateTime lastReveal = DateTime.MinValue;
+    static void Reveal()
     {
-        if (code >= 0)
+        if (V(Desk, "WakeReveal", "0") != "1") return;
+        if ((DateTime.Now - lastReveal).TotalSeconds < 10) return;
+        lastReveal = DateTime.Now;
+        try
         {
-            var k = (KBD)Marshal.PtrToStructure(l, typeof(KBD));
-            bool injected = (k.flags & 0x10) != 0;
-            int msg = w.ToInt32(); bool down = msg == 0x100 || msg == 0x104, up = msg == 0x101 || msg == 0x105;
-            bool isWin = k.vk == 0x5B || k.vk == 0x5C;
-            if (!injected)
-            {
-                if (isWin && down) { if (!winDown) { winDown = true; winCombo = false; } }
-                else if (!isWin && down && winDown) winCombo = true;
-                else if (isWin && up && winDown)
-                {
-                    winDown = false;
-                    if (!winCombo)
-                    {
-                        // a harmless unassigned key tells Windows "this was a combo", so Start stays shut
-                        keybd_event(0xFF, 0, 0, UIntPtr.Zero); keybd_event(0xFF, 0, 2, UIntPtr.Zero);
-                        host.BeginInvoke(new Action(ToggleHome));
-                    }
-                }
-            }
+            File.WriteAllText(Path.Combine(Res, "bootseq.inc"),
+                "[Variables]\r\nBTime=" + DateTime.Now.ToString("HH:mm") + "\r\nBNet=RESUMED\r\nBWid=-\r\nBDock=READY\r\n", Encoding.ASCII);
         }
-        return CallNextHookEx(hook, code, w, l);
+        catch { }
+        Bang("[!ActivateConfig \"" + Cfg + "\\Boot\" \"Boot.ini\"]");
     }
 
     static void Poll()
@@ -302,6 +296,8 @@ static class Dock
         // A click on the dock makes Rainmeter foreground: keep the app that was focused before it.
         if (fc.ToString().StartsWith("Rainmeter") || fc.ToString() == "DummyRainWClass") root = lastFg; else lastFg = root;
 
+        string cIdle = V(Theme, "Dim", "92,92,92"), cOpen = V(Theme, "Mid", "150,150,150"), cFocus = V(Theme, "Ink", "233,233,233");
+        string cAccent = V(Theme, "Accent", "164,22,26"), cRule = V(Theme, "Rule", "34,34,34");
         var used = new HashSet<IntPtr>();
         var bang = new StringBuilder(); var state = new StringBuilder(); var sig = new StringBuilder();
         int slot = 0;
@@ -310,14 +306,14 @@ static class Dock
         {
             slot++;
             int st = pick == IntPtr.Zero ? 0 : (focused && !IsIconic(pick) ? 2 : 1);
-            string col = st == 0 ? "96,96,96" : (st == 1 ? "170,170,170" : "245,245,245");
-            string idx = st == 0 ? "62,62,62" : "164,22,26";
+            string col = st == 0 ? cIdle : (st == 1 ? cOpen : cFocus);
+            string idx = st == 0 ? cRule : cAccent;
             string text = slot.ToString("00") + "  " + label;
-            if (curUnread > 0) { text += "  " + curUnread; if (st != 2) col = "214,56,60"; }
+            if (curUnread > 0) { text += "  " + curUnread; if (st != 2) col = cAccent; }
             curUnread = 0;
-            bang.Append("[!SetVariable T" + slot + " \"" + text + "\" \"deskforge\\Dock\"]");
-            bang.Append("[!SetVariable C" + slot + " \"" + col + "\" \"deskforge\\Dock\"]");
-            bang.Append("[!SetVariable K" + slot + " \"" + idx + "\" \"deskforge\\Dock\"]");
+            bang.Append("[!SetVariable T" + slot + " \"" + text + "\" \"" + Cfg + "\\Dock\"]");
+            bang.Append("[!SetVariable C" + slot + " \"" + col + "\" \"" + Cfg + "\\Dock\"]");
+            bang.Append("[!SetVariable K" + slot + " \"" + idx + "\" \"" + Cfg + "\\Dock\"]");
             state.Append(slot + "|" + pick.ToInt64() + "|" + st + "|" + key + "\n");
             sig.Append(text + st + pick.ToInt64() + ";");
         };
@@ -331,16 +327,13 @@ static class Dock
                 {
                     used.Add(w.H);
                     if (w.H == root) { pick = w.H; foc = true; } else if (pick == IntPtr.Zero) pick = w.H;
-                    if (Apps[i].Web != null) unread = Math.Max(unread, Unread(w.Title));
+                    unread = Math.Max(unread, Unread(w.Title));
                 }
-            if (Apps[i].Web != null)
-            {
-                int before;
-                bool seen = lastUnread.TryGetValue(Apps[i].Key, out before);
-                if (pick != IntPtr.Zero && seen && unread > before && !foc) Alert(Apps[i].Label, unread);
-                if (pick != IntPtr.Zero) lastUnread[Apps[i].Key] = unread;
-                curUnread = unread;
-            }
+            int before;
+            bool seen = lastUnread.TryGetValue(Apps[i].Key, out before);
+            if (pick != IntPtr.Zero && seen && unread > before && !foc) Alert(Apps[i].Label, unread + (unread == 1 ? " UNREAD" : " UNREAD"));
+            if (pick != IntPtr.Zero) lastUnread[Apps[i].Key] = unread;
+            curUnread = unread;
             emit(Apps[i].Label, pick, foc, Apps[i].Key);
         }
 
@@ -350,7 +343,7 @@ static class Dock
         {
             if (used.Contains(w.H)) continue;
             string label = null, key = "";
-            for (int i = Pinned; i < Apps.Length; i++) if (Match(Apps[i], w)) { label = Apps[i].Label; key = Apps[i].Key; break; }
+            for (int i = Pinned; i < Apps.Count; i++) if (Match(Apps[i], w)) { label = Apps[i].Label; key = Apps[i].Key; break; }
             if (label == null) label = w.Exe == "applicationframehost.exe" ? Clean(w.Title, 12) : Clean(Path.GetFileNameWithoutExtension(w.Path), 12);
             if (label.Length == 0) continue;
             object[] g;
@@ -362,14 +355,14 @@ static class Dock
             if (slot >= Slots) break;
             emit(kv.Key, (IntPtr)kv.Value[0], (bool)kv.Value[1], (string)kv.Value[2]);
         }
-        for (int s = slot + 1; s <= Slots; s++) bang.Append("[!SetVariable T" + s + " \"\" \"deskforge\\Dock\"]");
+        for (int s = slot + 1; s <= Slots; s++) bang.Append("[!SetVariable T" + s + " \"\" \"" + Cfg + "\\Dock\"]");
 
         string sg = sig.ToString();
         if (sg != lastSig || tick % 8 == 0)   // resend now and then so a refreshed skin fills in again
         {
             if (sg != lastSig) { try { File.WriteAllText(StateFile, state.ToString()); } catch { } }
             lastSig = sg;
-            bang.Append("[!UpdateMeterGroup D \"deskforge\\Dock\"][!Redraw \"deskforge\\Dock\"]");
+            bang.Append("[!UpdateMeterGroup D \"" + Cfg + "\\Dock\"][!Redraw \"" + Cfg + "\\Dock\"]");
             Bang(bang.ToString());
         }
 
@@ -385,7 +378,7 @@ static class Dock
                 full = r.L == b.Left && r.T == b.Top && r.R == b.Right && r.B == b.Bottom;
             }
         }
-        if (full != lastFull) { lastFull = full; if (!homeVisible) Bang(full ? "[!Hide \"deskforge\\Dock\"][!Hide \"deskforge\\Wave\"]" : "[!Show \"deskforge\\Dock\"][!Show \"deskforge\\Wave\"]"); }
+        if (full != lastFull) { lastFull = full; if (!homeVisible) Bang(full ? "[!Hide \"" + Cfg + "\\Dock\"][!Hide \"" + Cfg + "\\Wave\"]" : "[!Show \"" + Cfg + "\\Dock\"][!Show \"" + Cfg + "\\Wave\"]"); }
         EnforceWorkArea(true);
 
         // Esc closes Home, but only while Home is on screen.
@@ -480,7 +473,7 @@ static class Dock
         catch { }
     }
 
-    // Built-in panel only (WMI). Returns -1 when the display has no software brightness.
+    // Built-in display only (WMI). Returns -1 when the display has no software brightness.
     static int GetBri()
     {
         try
@@ -511,9 +504,10 @@ static class Dock
         int vw = (vol < 0 || mute) ? 1 : Math.Max(1, vol * BarW / 100);
         string bt = bri < 0 ? "--" : bri.ToString();
         int bw = bri < 0 ? 1 : Math.Max(1, bri * BarW / 100);
-        return "[!SetVariable Vol \"" + vt + "\" \"deskforge\\Dock\"][!SetVariable VolW " + vw + " \"deskforge\\Dock\"]"
-             + "[!SetVariable Bri \"" + bt + "\" \"deskforge\\Dock\"][!SetVariable BriW " + bw + " \"deskforge\\Dock\"]"
-             + "[!UpdateMeterGroup V \"deskforge\\Dock\"][!Redraw \"deskforge\\Dock\"]";
+        string d = " \"" + Cfg + "\\Dock\"]";
+        return "[!SetVariable Vol \"" + vt + "\"" + d + "[!SetVariable VolW " + vw + d
+             + "[!SetVariable Bri \"" + bt + "\"" + d + "[!SetVariable BriW " + bw + d
+             + "[!UpdateMeterGroup V" + d + "[!Redraw" + d;
     }
 
     static volatile int curVol = -1, curBri = -1;
@@ -539,8 +533,8 @@ static class Dock
     }
 
     // ---------------------------------------------------------------- wave z-order
-    // The audio wave skin draws inside the dock's top edge, so it must sit above the dock window.
-    // Both are topmost; whenever the dock ends up above the wave, lift the wave (no move, no activate).
+    // The wave addon draws on the dock's edge, so it must sit above the dock window. Both are topmost;
+    // whenever the dock ends up above the wave, lift the wave (no move, no activate).
     static IntPtr waveWin = IntPtr.Zero, dockWin = IntPtr.Zero;
 
     static IntPtr FindSkin(string tail)
@@ -559,11 +553,12 @@ static class Dock
 
     static void RaiseWave()
     {
+        if (V(Desk, "AddonWave", "0") != "1") return;
         if (waveWin == IntPtr.Zero || !IsWindow(waveWin)) waveWin = FindSkin("\\Wave\\Wave.ini");
         if (dockWin == IntPtr.Zero || !IsWindow(dockWin)) dockWin = FindSkin("\\Dock\\Dock.ini");
         if (waveWin == IntPtr.Zero || dockWin == IntPtr.Zero) return;
         int guard = 0;
-        for (IntPtr h = GetWindow(waveWin, 3); h != IntPtr.Zero && guard < 400; h = GetWindow(h, 3), guard++)   // GW_HWNDPREV = windows above
+        for (IntPtr h = GetWindow(waveWin, 3); h != IntPtr.Zero && guard < 400; h = GetWindow(h, 3), guard++)   // windows above the wave
             if (h == dockWin) { SetWindowPos(waveWin, (IntPtr)(-1), 0, 0, 0, 0, 0x0013); return; }             // TOPMOST, NOSIZE|NOMOVE|NOACTIVATE
     }
 
@@ -577,7 +572,7 @@ static class Dock
 
     static void Launch(App a)
     {
-        try { Process.Start(new ProcessStartInfo(a.File, a.Args) { UseShellExecute = true }); } catch { }
+        try { Process.Start(new ProcessStartInfo(a.File) { UseShellExecute = true }); } catch { }
     }
 
     static App Find(string key) { foreach (var a in Apps) if (a.Key == key) return a; return null; }
@@ -585,7 +580,12 @@ static class Dock
     static void Go(string key, bool allowMinimize, int st, IntPtr known)
     {
         if (key == "lock") { LockWorkStation(); return; }
-        if (key == "power") { try { Type shT = Type.GetTypeFromProgID("Shell.Application"); object sh = Activator.CreateInstance(shT); shT.InvokeMember("ShutdownWindows", System.Reflection.BindingFlags.InvokeMethod, null, sh, null); } catch { } return; }
+        if (key == "power")
+        {
+            // Opens the normal Windows "Shut down Windows" dialog. Nothing happens until the user picks an option there.
+            try { Type shT = Type.GetTypeFromProgID("Shell.Application"); object sh = Activator.CreateInstance(shT); shT.InvokeMember("ShutdownWindows", System.Reflection.BindingFlags.InvokeMethod, null, sh, null); } catch { }
+            return;
+        }
         var a = Find(key); if (a == null) return;
         IntPtr h = known != IntPtr.Zero && IsWindow(known) ? known : IntPtr.Zero;
         if (h == IntPtr.Zero)
@@ -600,6 +600,7 @@ static class Dock
     static void Main(string[] args)
     {
         SetProcessDPIAware();
+        LoadConfig();
         if (args.Length >= 2 && args[0] == "act")
         {
             try
@@ -626,15 +627,15 @@ static class Dock
             Bang(LevelBang(vv, mm, GetBri()));
             return;
         }
-        if (args.Length >= 1 && args[0] == "alerttest") { Alert("TEST", 3); Thread.Sleep(2500); return; }
+        if (args.Length >= 1 && args[0] == "alert") { Alert(args.Length > 1 ? args[1] : "ALERT", args.Length > 2 ? args[2] : ""); return; }
         if (args.Length >= 1 && args[0] == "home") { ToggleHome(); return; }
         if (args.Length >= 1 && args[0] == "close") { HideHome(); return; }
         if (args.Length >= 1 && args[0] == "search")
         {
             HideHome();
             Thread.Sleep(220);
-            keybd_event(0x12, 0, 0, UIntPtr.Zero); keybd_event(0x20, 0, 0, UIntPtr.Zero);
-            keybd_event(0x20, 0, 2, UIntPtr.Zero); keybd_event(0x12, 0, 2, UIntPtr.Zero);
+            keybd_event(0x5B, 0, 0, UIntPtr.Zero); keybd_event(0x53, 0, 0, UIntPtr.Zero);       // Win+S
+            keybd_event(0x53, 0, 2, UIntPtr.Zero); keybd_event(0x5B, 0, 2, UIntPtr.Zero);
             return;
         }
 
@@ -645,15 +646,18 @@ static class Dock
             host = new Host();
             IntPtr hh = host.Handle;
             bool ok = RegisterHotKey(hh, 1, 0x0008 | 0x4000, 0x5A);          // Win+Z
-            if (!ok) ok = RegisterHotKey(hh, 1, 0x0001 | 0x0002 | 0x4000, 0x5A); // fallback Ctrl+Alt+Z
-            hookFn = KeyHook;
-            hook = SetWindowsHookEx(13, hookFn, GetModuleHandle(null), 0);
+            if (!ok) RegisterHotKey(hh, 1, 0x0001 | 0x0002 | 0x4000, 0x5A);   // fallback Ctrl+Alt+Z
+            SessionSwitchEventHandler onSwitch = delegate (object s, SessionSwitchEventArgs e) { if (e.Reason == SessionSwitchReason.SessionUnlock) host.BeginInvoke(new Action(Reveal)); };
+            PowerModeChangedEventHandler onPower = delegate (object s, PowerModeChangedEventArgs e) { if (e.Mode == PowerModes.Resume) host.BeginInvoke(new Action(Reveal)); };
+            SystemEvents.SessionSwitch += onSwitch;
+            SystemEvents.PowerModeChanged += onPower;
             var t = new System.Windows.Forms.Timer { Interval = 700 };
             t.Tick += delegate { try { Poll(); } catch { } };
             t.Start();
             new Thread(LevelThread) { IsBackground = true }.Start();
             Application.Run();
-            if (hook != IntPtr.Zero) UnhookWindowsHookEx(hook);
+            SystemEvents.SessionSwitch -= onSwitch;
+            SystemEvents.PowerModeChanged -= onPower;
             UnregisterHotKey(hh, 1); UnregisterHotKey(hh, 2);
             EnforceWorkArea(false);
         }

@@ -2,7 +2,7 @@
 // Fetches Binance public data (no key): 15m candles every 10s, order book every 4s.
 // Computes pixel geometry here and pushes it to Rainmeter as ONE bang string via WM_COPYDATA,
 // so Rainmeter only redraws. Idle priority, single instance, exits when Rainmeter closes.
-// Build: csc /target:winexe /out:market.exe market.cs
+// Build: helpers\build.ps1
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

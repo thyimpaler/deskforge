@@ -44,3 +44,25 @@ Choices made where the plan was open or unclear. Each one takes the simpler opti
   tests are plain PowerShell scripts that print PASS or FAIL and exit 1 on failure, so they run the same
   everywhere. PSScriptAnalyzer and gitleaks are not installed locally.
 - Screenshots are renders from `tools/render-previews.ps1` (System.Drawing, sample data), not captures.
+
+## M3 dock, home, now, boot and helpers
+
+- No camera code: the countdown overlay skin and its camera script were never copied, and
+  `tests/no-camera.ps1` fails on any capture API name in code (checked to fail on a probe file).
+- The dock helper reads apps from `@Resources\apps.txt` (from `homeApps`), colours from `theme.inc`, and the
+  dock edge and switches from `desk.inc`. Personal app lists, watched support-desk and chat tabs, and browser
+  profile arguments are gone. Any pinned app whose title starts with an unread count like `(3)` shows it, and
+  raises the Alert band only when the alert addon is on.
+- Removed the low-level keyboard hook that turned a lone Win key into Home. Home now opens with Win+Z only
+  (Ctrl+Alt+Z fallback). A global keyboard hook is more than a desk kit should ask for.
+- Home's search opens Windows search (Win+S) instead of a third-party launcher.
+- Wake reveal: the dock helper listens for unlock and resume (SystemEvents) and plays the Boot skin when
+  `wakeReveal.enabled` is true. The startup check plays it after sign-in.
+- Now playing still reads the Spotify window title, as the source did. The plan's "Windows media session" needs
+  WinRT projections that the in-box csc cannot reference cleanly; left for later.
+- Skins use the theme variables and screen-size variables instead of fixed 1920x1080 pixel positions.
+  Rainmeter's own scaling at 125 and 150 percent is not verified (owner laptop, Stage 4).
+- Install pre-creates the run-time files (bootcheck.txt, bootseq.inc, dockstate.txt, nowplaying.txt,
+  alert.inc) so Rainmeter never logs a missing file, and restore removes them even though they changed.
+- csc builds all three helpers with /warnaserror+: zero warnings. The skins were NOT loaded in Rainmeter:
+  that would touch the owner's running Rainmeter. The skin load test stays an owner step (plan section 8).

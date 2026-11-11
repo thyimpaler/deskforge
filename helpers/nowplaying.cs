@@ -1,7 +1,7 @@
-// Tiny Spotify now-playing reader for the deskforge Rainmeter skin.
+// deskforge now-playing reader for the deskforge\Now skin. Reads only a window title on this PC; no network.
 // Reads Spotify's window title ("Artist - Song"), writes nowplaying.txt (line 1 song, line 2 artist)
 // only when it changes. Idle priority, single instance, exits when Rainmeter is no longer running.
-// Build: csc /target:winexe /out:nowplaying.exe nowplaying.cs
+// Build: helpers\build.ps1
 using System;
 using System.Diagnostics;
 using System.IO;
