@@ -1,5 +1,6 @@
 // Runs site/app.js against a tiny stand-in for the browser DOM (node, no packages), to check behaviour the
-// validator tests cannot see: Copy refuses an invalid desk, and odd coin ids cannot break the preview.
+// validator tests cannot see: Copy refuses an invalid desk, odd coin ids cannot break the preview,
+// and the theme accent stays readable as text on the page.
 // Run: node tests/site-app.test.mjs
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -23,20 +24,23 @@ function makeEl(id) {
   return e;
 }
 
-function load() {
+function load(page) {
   const byId = {};
   const copied = [];
+  const props = {};
   const document = {
     getElementById(id) { return byId[id] || (byId[id] = makeEl(id)); },
     createElement() { return makeEl(); },
     querySelectorAll() { return []; },
-    documentElement: makeEl(), body: makeEl(),
+    documentElement: Object.assign(makeEl(), { style: { setProperty(k, v) { props[k] = v; } } }), body: makeEl(),
     createRange() { return { selectNodeContents() {} }; }
   };
   const window = {
     isSecureContext: true, addEventListener() {},
     getSelection() { return { removeAllRanges() {}, addRange() {} }; }
   };
+  // page: the configurator's own --bg and --ink, as the browser would report them for light or dark
+  if (page) window.getComputedStyle = () => ({ getPropertyValue: (k) => page[k] || '' });
   const navigator = { clipboard: { writeText(t) { copied.push(t); return { then(ok) { ok(); } }; } } };
   const ctx = { window, document, navigator, setTimeout };
   vm.createContext(ctx);
@@ -45,7 +49,8 @@ function load() {
   vm.runInContext(read('site/app.js'), ctx);
   const $ = (id) => document.getElementById(id);
   const type = (id, value) => { $(id).value = value; $('controls').handlers.input({ target: $(id) }); };
-  return { $, type, copied };
+  const pickTheme = (name) => $('controls').handlers.change({ target: { name: 'theme', value: name } });
+  return { $, type, copied, props, pickTheme };
 }
 
 let fails = 0;
@@ -82,6 +87,31 @@ for (const id of ['constructor', 'toString', '__proto__', 'hasownproperty']) {
     assert.ok(p.$('json').textContent.includes(JSON.stringify(id.toLowerCase())), 'the coin did not reach desk.json');
   });
 }
+
+const lum = (hex) => {
+  const n = parseInt(hex.slice(1), 16), f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  return 0.2126 * f(n >> 16 & 255) + 0.7152 * f(n >> 8 & 255) + 0.0722 * f(n & 255);
+};
+const contrast = (a, b) => (Math.max(lum(a), lum(b)) + 0.05) / (Math.min(lum(a), lum(b)) + 0.05);
+const LIGHT = { '--bg': '#f3f1ec', '--ink': '#151514' }, DARK = { '--bg': '#0b0b0b', '--ink': '#ececec' };
+
+check('the grey theme accent stays readable as text on the light page', () => {
+  const p = load(LIGHT);
+  p.pickTheme('minimal-grey');
+  assert.equal(p.props['--accent'], '#d0d0cc', 'the button fill keeps the theme accent');
+  assert.ok(contrast(p.props['--accent-text'], LIGHT['--bg']) >= 3, 'accent text is ' + p.props['--accent-text']);
+});
+check('an accent that is already readable is left alone', () => {
+  const p = load(DARK);
+  p.pickTheme('minimal-grey');
+  assert.equal(p.props['--accent-text'], '#d0d0cc');
+});
+check('the theme never sets the error colour', () => {
+  const p = load(LIGHT);
+  for (const t of ['minimal-grey', 'paper-light', 'red-on-black', 'terminal-green']) p.pickTheme(t);
+  assert.ok(!('--error' in p.props));
+  assert.ok(!/--error\s*:[^;]*var\(--accent/.test(read('site/style.css')), '--error must not follow --accent');
+});
 
 console.log(fails ? `site-app: FAIL (${fails})` : 'site-app: PASS');
 process.exit(fails ? 1 : 0);

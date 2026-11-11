@@ -222,7 +222,34 @@
     }
     document.documentElement.style.setProperty('--accent', c.accent);
     document.documentElement.style.setProperty('--on-accent', c.onAccent);
+    document.documentElement.style.setProperty('--accent-text', accentText(c.accent));
     scaleDesk();
+  }
+
+  // The theme accent is also used for small text and focus rings on this page, whose own background is light
+  // or dark by the visitor's system setting. A pale accent (the grey theme) on the light page would vanish, so
+  // the text copy of the accent is mixed toward the page ink, in steps, until it reaches 3:1 against the page.
+  function lum(hex) {
+    var n = parseInt(hex.slice(1), 16);
+    var f = function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    return 0.2126 * f(n >> 16 & 255) + 0.7152 * f(n >> 8 & 255) + 0.0722 * f(n & 255);
+  }
+  function contrast(a, b) { var x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+  function mix(a, b, t) {
+    var p = parseInt(a.slice(1), 16), q = parseInt(b.slice(1), 16), out = '#';
+    [16, 8, 0].forEach(function (s) {
+      var v = Math.round((p >> s & 255) * (1 - t) + (q >> s & 255) * t);
+      out += ('0' + v.toString(16)).slice(-2);
+    });
+    return out;
+  }
+  function accentText(accent) {
+    if (!window.getComputedStyle) return accent;
+    var cs = window.getComputedStyle(document.documentElement);
+    var bg = cs.getPropertyValue('--bg').trim(), ink = cs.getPropertyValue('--ink').trim(), hex = /^#[0-9a-fA-F]{6}$/;
+    if (!hex.test(bg) || !hex.test(ink) || !hex.test(accent)) return accent;
+    for (var t = 0; t <= 1.001; t += 0.1) { var c = mix(accent, ink, t); if (contrast(c, bg) >= 3) return c; }
+    return ink;
   }
 
   function scaleDesk() {
@@ -323,6 +350,11 @@
   buildToggles('addons', ADDONS, 'addons');
   fillControls();
   update();
+  // the page flips between light and dark with the system setting; work the accent text colour out again
+  if (window.matchMedia) {
+    var scheme = window.matchMedia('(prefers-color-scheme: light)');
+    if (scheme.addEventListener) scheme.addEventListener('change', renderDesk);
+  }
   if (window.ResizeObserver) new ResizeObserver(scaleDesk).observe($('stage'));
   else window.addEventListener('resize', scaleDesk);
 })();
