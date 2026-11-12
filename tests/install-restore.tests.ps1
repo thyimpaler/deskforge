@@ -17,6 +17,10 @@ $repo = Split-Path -Parent $PSScriptRoot
 $install = Join-Path $repo 'tools\install.ps1'
 $restore = Join-Path $repo 'tools\restore.ps1'
 $root = Join-Path $env:TEMP ('deskforge-test-' + [guid]::NewGuid().ToString('N').Substring(0, 8))
+# GitHub's runner gives TEMP in short form (RUNNER~1). Paths from Get-ChildItem come back long, so the
+# Substring offsets below would be wrong. Create the folder, then use its long form everywhere.
+New-Item -ItemType Directory -Path $root -Force | Out-Null
+$root = (Get-Item -LiteralPath $root).FullName
 $fails = 0
 function Check([string]$name, [bool]$ok, [string]$detail = '') {
     if ($ok) { Write-Output "PASS  $name" } else { Write-Output "FAIL  $name $detail"; $script:fails++ }

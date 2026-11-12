@@ -418,7 +418,7 @@
                   },
                   {
                       "path":  "tests/install-restore.tests.ps1",
-                      "sha256":  "81a4da81b2aaa2cbdcc2c27eb1f19b4d7b18132995c96a6ff9bb1b122297ea2f"
+                      "sha256":  "a25aee1a9ef4152f2694abfb38174e1b48505219dad6ffd758bae6aab40fbdf3"
                   },
                   {
                       "path":  "tests/items.tests.ps1",
