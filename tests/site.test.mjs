@@ -43,7 +43,9 @@ const html = read('site/index.html');
 check('site makes no network requests (CSP connect-src none, no remote URLs)', () => {
   assert.ok(html.includes("connect-src 'none'"));
   const all = html + read('site/app.js') + read('site/schema.js');
-  assert.ok(!/https?:\/\//.test(all.replace(/http:\/\/json-schema\.org[^"]*/g, '')), 'found a remote URL');
+  // A plain link the reader clicks is navigation, not a request the page makes; CSP still blocks fetches.
+  const noLinks = all.replace(/<a\s[^>]*href="https?:\/\/github\.com\/thyimpaler\/deskforge[^"]*"[^>]*>/g, '');
+  assert.ok(!/https?:\/\//.test(noLinks.replace(/http:\/\/json-schema\.org[^"]*/g, '')), 'found a remote URL');
 });
 console.log(fails ? `site: FAIL (${fails})` : 'site: PASS');
 process.exit(fails ? 1 : 0);
