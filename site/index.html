@@ -15,7 +15,7 @@
 <header class="top">
   <p class="eyebrow">deskforge / configurator</p>
   <h1>Build the desk.<br>Export one file.</h1>
-  <p class="lede">Choose a theme and what sits on your Windows desktop. The page writes <code>desk.json</code>. Hand it to your coding agent, or copy it to <code>config\desk.json</code>, and run the dry run. Nothing here touches your PC or calls any server.</p>
+  <p class="lede">Choose a theme and what sits on your Windows desktop: a clock, the weather, disk, memory and CPU, Claude status, the track playing, a dock and a Home launcher. Crypto prices are an optional widget. Leave them off and the panel never requests a price. The page writes <code>desk.json</code>. Hand it to your coding agent, or copy it to <code>config\desk.json</code>, and run the dry run. Nothing here touches your PC or calls any server.</p>
 </header>
 
 <main class="layout">
@@ -65,10 +65,10 @@
       </li>
 
       <li class="step">
-        <h2><span class="n">03</span>Prices</h2>
-        <p class="hint">One or two CoinGecko ids, for example bitcoin, ethereum, solana.</p>
+        <h2><span class="n">03</span>Prices (optional)</h2>
+        <p class="hint">Leave both empty for no prices: the panel then hides this section and never contacts CoinGecko. Or enter one or two CoinGecko ids, for example bitcoin, ethereum, solana.</p>
         <div class="grid3">
-          <label class="field">Coin 1<input id="coin1" spellcheck="false"></label>
+          <label class="field">Coin 1 (optional)<input id="coin1" spellcheck="false"></label>
           <label class="field">Coin 2 (optional)<input id="coin2" spellcheck="false"></label>
           <label class="field">Refresh, seconds<input id="refresh" inputmode="numeric"></label>
         </div>

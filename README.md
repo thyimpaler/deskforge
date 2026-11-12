@@ -18,13 +18,17 @@ you say yes. Undo is one command.
 
 A free, MIT-licensed kit for a customised Windows 10 desktop, built on Rainmeter:
 
-- **Panel**: clock, weather, two coin prices, disk, memory and CPU, Claude status.
+- **Panel**: clock, weather, disk, memory and CPU, Claude status.
 - **Now**: the Spotify track playing.
 - **Dock**: a text dock with your apps, volume, brightness and the clock.
 - **Home**: a full-screen launcher on Win+Z.
 - **Boot**: a 3 second reveal after sign-in, unlock or wake.
 - **Four themes**: red on black, paper light, terminal green, minimal grey.
 - **Addons**, off by default: Tape, Depth, Wave, Mood, Alert.
+
+Crypto prices are an optional widget. The panel can show one or two coin prices from CoinGecko, but the
+example desk has none, and with an empty `coins` list the price section is hidden and never requested. Leave
+it off and you have a full desk with no crypto at all.
 
 No keys, no accounts, no admin rights. Every data source is public and keyless.
 

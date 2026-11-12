@@ -17,7 +17,8 @@ window.DESK_DATA = {
     "units": { "type": "string", "enum": ["c", "f"] },
     "clock": { "type": "string", "enum": ["12", "24"] },
     "coins": {
-      "type": "array", "minItems": 1, "maxItems": 2, "uniqueItems": true,
+      "type": "array", "minItems": 0, "maxItems": 2, "uniqueItems": true,
+      "description": "Optional price widget: zero, one or two coins. An empty list shows no prices and makes no price requests.",
       "items": { "type": "string", "pattern": "^[a-z0-9-]{1,40}$", "description": "CoinGecko id, for example bitcoin" }
     },
     "dock": { "type": "string", "enum": ["top", "bottom"] },
@@ -68,7 +69,7 @@ window.DESK_DATA = {
   "longitude": -0.13,
   "units": "c",
   "clock": "24",
-  "coins": ["bitcoin", "ethereum"],
+  "coins": [],
   "dock": "bottom",
   "skins": { "panel": true, "now": true, "dock": true, "home": true, "boot": true },
   "addons": { "tape": false, "depth": false, "wave": false, "mood": false, "alert": false },

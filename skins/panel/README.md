@@ -2,8 +2,8 @@
 
 ![Panel preview](screenshot.png)
 
-The core widget: a large clock with a seconds track, the weather for your city, two coin prices with their
-24-hour change, disk, memory and CPU load, and the Claude status page.
+The core widget: a large clock with a seconds track, the weather for your city, disk, memory and CPU load,
+and the Claude status page. Optionally, one or two coin prices with their 24-hour change (off by default).
 
 ## Look
 
@@ -20,13 +20,14 @@ come from the theme. The preview above is a render from `tools/render-previews.p
 | `latitude`, `longitude` | where the weather comes from |
 | `units` | `c` for Celsius and km/h, `f` for Fahrenheit and mph |
 | `clock` | `12` or `24` |
-| `coins` | one or two CoinGecko ids, for example `bitcoin`, `ethereum` |
+| `coins` | optional: empty (the default) hides section 03 and sends no price request; or one or two CoinGecko ids, for example `bitcoin`, `ethereum` |
 | `refreshSeconds` | how often prices refresh, 60 or more |
 | `skins.panel` | `false` leaves the panel out |
 
 ## Data and privacy
 
-Three keyless public sources: Open-Meteo (weather), CoinGecko (prices) and status.claude.com (status).
+Keyless public sources: Open-Meteo (weather), status.claude.com (status) and, only when `coins` is not empty,
+CoinGecko (prices).
 The only thing sent is the request itself: your latitude and longitude go to Open-Meteo. Nothing else
 leaves the machine. When a request fails the section label shows `OFFLINE` or `NO DATA` and the panel keeps
 retrying on its normal schedule. Rainmeter's WebParser has no timeout setting of its own, so a hung request

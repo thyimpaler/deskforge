@@ -17,6 +17,17 @@ Check 'config/desk.example.json is valid' ($e.Count -eq 0) ($e -join '; ')
 
 $schema = Get-Content -Raw (Join-Path $repo 'config\desk.schema.json') | ConvertFrom-Json
 Check 'schema rejects unknown fields at the top' ($schema.additionalProperties -eq $false)
+Check 'schema allows zero coins and at most two, unique' (($schema.properties.coins.minItems -eq 0) -and ($schema.properties.coins.maxItems -eq 2) -and $schema.properties.coins.uniqueItems)
+Check 'example desk has no coins (crypto is opt-in)' (@($ex.coins).Count -eq 0)
+Check 'a zero-coin fixture exists and is marked valid' ((Get-Content -Raw (Join-Path $repo 'tests\fixtures\valid-no-coins.json') | ConvertFrom-Json).expect -eq 'valid')
+$lists = @{ 0 = '[]'; 1 = '["bitcoin"]'; 2 = '["bitcoin","ethereum"]'; 3 = '["bitcoin","ethereum","solana"]' }
+foreach ($n in 0, 1, 2, 3) {
+    $c = $ex | ConvertTo-Json -Depth 6 | ConvertFrom-Json
+    $c.coins = ('{"c":' + $lists[$n] + '}' | ConvertFrom-Json).c
+    $ce = Test-DeskConfig -Config $c
+    if ($n -le 2) { Check "$n coin(s) accepted" ($ce.Count -eq 0) ($ce -join '; ') }
+    else { Check "$n coins rejected" (($ce -join ' ') -like '*coins*') }
+}
 
 foreach ($f in Get-ChildItem (Join-Path $repo 'tests\fixtures') -Filter *.json) {
     $fx = Get-Content -Raw -Encoding UTF8 $f.FullName | ConvertFrom-Json

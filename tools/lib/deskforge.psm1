@@ -141,8 +141,10 @@ function Get-CoinLabel([string]$id) {
 
 function New-DeskInc($Config) {
     $inv = [Globalization.CultureInfo]::InvariantCulture
-    $c1 = $Config.coins[0]
-    $c2 = if (@($Config.coins).Count -gt 1) { $Config.coins[1] } else { $Config.coins[0] }
+    # Prices are optional: with no coins both lines are hidden and their measures disabled, so nothing is requested.
+    $coins = @($Config.coins | Where-Object { $_ })
+    $c1 = if ($coins.Count -gt 0) { $coins[0] } else { '' }
+    $c2 = if ($coins.Count -gt 1) { $coins[1] } else { $c1 }
     $twelve = $Config.clock -eq '12'
     $f = $Config.units -eq 'f'
     $lines = @(
@@ -158,10 +160,11 @@ function New-DeskInc($Config) {
         "ClockSubFmt=$(if ($twelve) { '%p  .  %a %#d %b' } else { '%a %#d %b' })",
         "DockClockFmt=$(if ($twelve) { '%#I:%M %p' } else { '%H:%M' })",
         "Coin1=$c1",
-        "Coin1Label=$(Get-CoinLabel $c1)",
+        "Coin1Label=$(if ($c1) { Get-CoinLabel $c1 } else { '' })",
+        "Coin1Hidden=$(if ($coins.Count -gt 0) { 0 } else { 1 })",
         "Coin2=$c2",
-        "Coin2Label=$(Get-CoinLabel $c2)",
-        "Coin2Hidden=$(if (@($Config.coins).Count -gt 1) { 0 } else { 1 })",
+        "Coin2Label=$(if ($c2) { Get-CoinLabel $c2 } else { '' })",
+        "Coin2Hidden=$(if ($coins.Count -gt 1) { 0 } else { 1 })",
         "PriceRate=$($Config.refreshSeconds)",
         "DockEdge=$($Config.dock)",
         "WakeReveal=$(if ($Config.wakeReveal.enabled -and $Config.skins.boot) { 1 } else { 0 })",

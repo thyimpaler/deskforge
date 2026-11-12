@@ -29,6 +29,14 @@ for (const k of ['weather', 'prices', 'status']) {
   check(`data.js mock ${k} equals examples/${k}.json`, () => assert.deepEqual(plain(D.mock[k]), JSON.parse(read(`examples/${k}.json`))));
 }
 check('example desk is valid in the site validator', () => assert.equal(validate(plain(D.example), D.schema, themes).length, 0));
+check('example desk has no coins (crypto is opt-in)', () => assert.deepEqual(plain(D.example).coins, []));
+check('site validator takes zero, one or two coins and rejects three', () => {
+  for (const [coins, ok] of [[[], true], [['bitcoin'], true], [['bitcoin', 'ethereum'], true], [['bitcoin', 'ethereum', 'solana'], false]]) {
+    const errs = validate(Object.assign(plain(D.example), { coins }), D.schema, themes);
+    assert.equal(errs.length === 0, ok, coins.length + ' coins: ' + errs.join('; '));
+  }
+});
+check('a zero-coin fixture exists and is marked valid', () => assert.equal(JSON.parse(read('tests/fixtures/valid-no-coins.json')).expect, 'valid'));
 
 for (const f of readdirSync(join(repo, 'tests/fixtures')).filter((n) => n.endsWith('.json'))) {
   const fx = JSON.parse(read('tests/fixtures/' + f));

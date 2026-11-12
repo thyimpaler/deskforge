@@ -28,9 +28,10 @@ function load(page) {
   const byId = {};
   const copied = [];
   const props = {};
+  const made = [];
   const document = {
     getElementById(id) { return byId[id] || (byId[id] = makeEl(id)); },
-    createElement() { return makeEl(); },
+    createElement() { const e = makeEl(); made.push(e); return e; },
     querySelectorAll() { return []; },
     documentElement: Object.assign(makeEl(), { style: { setProperty(k, v) { props[k] = v; } } }), body: makeEl(),
     createRange() { return { selectNodeContents() {} }; }
@@ -50,7 +51,9 @@ function load(page) {
   const $ = (id) => document.getElementById(id);
   const type = (id, value) => { $(id).value = value; $('controls').handlers.input({ target: $(id) }); };
   const pickTheme = (name) => $('controls').handlers.change({ target: { name: 'theme', value: name } });
-  return { $, type, copied, props, pickTheme };
+  // texts drawn since the given mark (the preview is rebuilt from scratch on every update)
+  const drawn = (from) => made.slice(from).map((e) => e.textContent);
+  return { $, type, copied, props, pickTheme, made, drawn };
 }
 
 let fails = 0;
@@ -78,6 +81,42 @@ check('Copy does nothing and says so when the desk has errors', () => {
   assert.equal(p.copied.length, 0, 'an invalid desk was copied');
   assert.match(p.$('status').textContent, /not copied/i);
   assert.match(p.$('status').className, /bad/);
+});
+
+check('the example desk has no coins and no coin is filled in for you', () => {
+  const p = load();
+  assert.equal(p.$('coin1').value, '');
+  assert.equal(p.$('coin2').value, '');
+  assert.deepEqual(JSON.parse(p.$('json').textContent).coins, []);
+  assert.match(p.$('status').textContent, /ready to export/i);
+});
+
+check('a zero-coin desk previews without a prices section and copies as valid', () => {
+  const p = load();
+  p.type('coin1', 'bitcoin');
+  let mark = p.made.length;
+  p.type('coin2', 'ethereum');
+  assert.ok(p.drawn(mark).includes('03 / PRICES'), 'prices should show with coins');
+  p.type('coin1', ''); p.type('coin2', '');
+  assert.deepEqual(JSON.parse(p.$('json').textContent).coins, [], 'clearing both coins should give an empty list');
+  mark = p.made.length;
+  p.type('city', 'London');
+  const t = p.drawn(mark);
+  assert.ok(!t.includes('03 / PRICES'), 'the prices label was drawn with no coins');
+  assert.ok(!t.some((s) => /^(BTC|ETH)$/.test(s)), 'a coin label was drawn with no coins');
+  assert.ok(t.includes('04 / MACHINE'), 'the rest of the panel should still draw');
+  assert.match(p.$('status').textContent, /ready to export/i);
+  p.$('copy').handlers.click();
+  assert.equal(p.copied.length, 1);
+  assert.deepEqual(JSON.parse(p.copied[0]).coins, []);
+});
+
+check('Reset goes back to a desk with no coins', () => {
+  const p = load();
+  p.type('coin1', 'solana');
+  p.$('reset').handlers.click();
+  assert.equal(p.$('coin1').value, '');
+  assert.deepEqual(JSON.parse(p.$('json').textContent).coins, []);
 });
 
 for (const id of ['constructor', 'toString', '__proto__', 'hasownproperty']) {

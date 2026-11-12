@@ -24,7 +24,7 @@ You are helping a person set up a Windows desk with deskforge. **The person make
 3. Ask only the questions that change the plan, in plain words:
    - Which theme: red-on-black, paper-light, terminal-green or minimal-grey? (show `themes/*/screenshot.png`)
    - Which city for the weather, and Celsius or Fahrenheit?
-   - Which one or two coins, if any interest them (default bitcoin and ethereum)?
+   - Do they want crypto prices at all? The default is none (`"coins": []`). If yes, which one or two coins?
    - Dock at the top or bottom? Which apps on the dock and Home (up to 12)?
    - Start the desk at sign-in? (adds one value under HKCU Run)
    - Any addons? They are off by default; Tape, Depth and Wave cost more CPU.

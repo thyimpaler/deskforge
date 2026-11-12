@@ -6,7 +6,7 @@
   "longitude": -0.13,
   "units": "c",
   "clock": "24",
-  "coins": ["bitcoin", "ethereum"],
+  "coins": [],
   "dock": "bottom",
   "skins": { "panel": true, "now": true, "dock": true, "home": true, "boot": true },
   "addons": { "tape": false, "depth": false, "wave": false, "mood": false, "alert": false },

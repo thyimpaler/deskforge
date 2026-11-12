@@ -78,11 +78,11 @@
                       "files":  [
                                     {
                                         "path":  "skins/panel/Panel.ini",
-                                        "sha256":  "dc8384c65792ab21e56ade1e0f7d3ffcbc1e5d11cda6f95f45798667a58b8925"
+                                        "sha256":  "4be72650ff79d39f2c9e4a0a5a6d6905719bd864f19808bbcb355131ea5a5bc5"
                                     },
                                     {
                                         "path":  "skins/panel/README.md",
-                                        "sha256":  "962d8ba74a92e9974658a732bca0716724ec24d30577dda3be742897d639be08"
+                                        "sha256":  "e92975bb9615180d16e91bbedab45e79878a577c53b17fa5251099550790d611"
                                     },
                                     {
                                         "path":  "skins/panel/screenshot.png",
@@ -332,7 +332,7 @@
     "lib":  [
                 {
                     "path":  "tools/lib/deskforge.psm1",
-                    "sha256":  "74d5ef23b7f39830bbb59e4c7a3ce1eb9b2380d7d8d214a83206da686c8143b5"
+                    "sha256":  "124f4857a594199745852c3b1b325041c20f3c5e8143b4ea50e4d18ff3312be7"
                 }
             ],
     "tests":  [
@@ -405,6 +405,10 @@
                       "sha256":  "ad2133241b1a5034fca09e8a2b65ab586377768c9e64630c490ef75a2edb0c44"
                   },
                   {
+                      "path":  "tests/fixtures/valid-no-coins.json",
+                      "sha256":  "037df890f96059efb0c01f7acd5bfd16ac5d76a05350d47b09beb22eb615cd6b"
+                  },
+                  {
                       "path":  "tests/fixtures/valid-one-coin-12h-fahrenheit.json",
                       "sha256":  "23f24bb978fc66cc050115180ae06d558d992136748981e98f6aec43cfd73f9b"
                   },
@@ -422,7 +426,7 @@
                   },
                   {
                       "path":  "tests/items.tests.ps1",
-                      "sha256":  "6831320edca7e8be29b965f78af17c87654f95d81ccbceaa058fae9792bd19de"
+                      "sha256":  "16e4490ed086de4f605d9a345040abb3b397ff61a3a28ee8beabca55b98a677a"
                   },
                   {
                       "path":  "tests/parse-check.ps1",
@@ -438,15 +442,15 @@
                   },
                   {
                       "path":  "tests/schema.tests.ps1",
-                      "sha256":  "9ef29ea93f3e864d3571d061fb6d421889a141ca460e1e8ea27bd0d5cc1d99f8"
+                      "sha256":  "ff85cbd70fd0f9d43512538ea1a31d2ef801cba075d755b4766bde89156d7dc7"
                   },
                   {
                       "path":  "tests/site-app.test.mjs",
-                      "sha256":  "7c7b299d204c99e605b573678a70d254cc347c3ead29626ef36b7c21a5fd7ac9"
+                      "sha256":  "13ff478522d65cb39cce08449087d049046c7a59be28ca443225ccb02da1ad52"
                   },
                   {
                       "path":  "tests/site.test.mjs",
-                      "sha256":  "6c6b44d855112416c849a7afa0eb85886903baf119da8286e1c9761a68dadd91"
+                      "sha256":  "27d9e39b6dd44ecd35d9a7879bba3abcf64d15e6a6fd6f77dc3fe2bef39b5832"
                   }
               ]
 }

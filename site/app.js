@@ -4,7 +4,7 @@
   var D = window.DESK_DATA;
   var themeNames = Object.keys(D.themes);
   var SKINS = [
-    ['panel', 'Panel', 'Clock, weather, prices, machine, Claude status'],
+    ['panel', 'Panel', 'Clock, weather, machine, Claude status, optional prices'],
     ['now', 'Now playing', 'The Spotify track under the panel'],
     ['dock', 'Dock', 'A text dock instead of the taskbar'],
     ['home', 'Home', 'Full-screen launcher on Win+Z'],
@@ -77,8 +77,9 @@
     $('latitude').value = state.latitude;
     $('longitude').value = state.longitude;
     setRadio('units', state.units); setRadio('clock', state.clock); setRadio('dock', state.dock);
-    $('coin1').value = state.coins[0] || '';
-    $('coin2').value = state.coins[1] || '';
+    var coins = Array.isArray(state.coins) ? state.coins : [];
+    $('coin1').value = coins[0] || '';
+    $('coin2').value = coins[1] || '';
     $('refresh').value = state.refreshSeconds;
     document.querySelectorAll('input[data-group]').forEach(function (c) { c.checked = !!state[c.dataset.group][c.dataset.key]; });
     $('wakeOn').checked = state.wakeReveal.enabled;
@@ -169,8 +170,10 @@
       text(desk, temp + '°', px - 3, py + 208, disp, 39, c.ink, { bold: true });
       text(desk, 'OVERCAST', px + 104, py + 218, mono, 12, c.mid);
       text(desk, m.weather.current.relative_humidity_2m + '% HUMID  .  ' + wind + (f ? ' MPH' : ' KM/H'), px + 104, py + 240, mono, 12, c.mid);
-      text(desk, '03 / PRICES', px, py + 292, mono, 10, c.dim);
-      state.coins.slice(0, 2).forEach(function (id, k) {
+      // prices are optional: with no coins the panel hides the whole section, as Panel.ini does
+      var coins = Array.isArray(state.coins) ? state.coins.slice(0, 2) : [];
+      if (coins.length) text(desk, '03 / PRICES', px, py + 292, mono, 10, c.dim);
+      coins.forEach(function (id, k) {
         var d = has(m.prices, id) ? m.prices[id] : m.prices[k === 0 ? 'bitcoin' : 'ethereum'];
         var chg = d.usd_24h_change, yy = py + 318 + k * 39;
         text(desk, coinLabel(id), px, yy + 9, mono, 12, c.mid);

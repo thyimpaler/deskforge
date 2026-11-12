@@ -5,7 +5,7 @@ deskforge has no accounts, no keys, no telemetry and no server of its own.
 | Feature | Host | What is sent |
 |---|---|---|
 | Panel weather | api.open-meteo.com | your latitude and longitude, every 10 minutes |
-| Panel prices | api.coingecko.com | the coin ids, every `refreshSeconds` |
+| Panel prices (only when coins are set) | api.coingecko.com | the coin ids, every `refreshSeconds`. With an empty `coins` list (the default) no request is made |
 | Panel status | status.claude.com | nothing but the request, every 5 minutes |
 | Startup check | api.open-meteo.com | one request at latitude 0, longitude 0, to see if you are online |
 | Tape, Depth (addons) | api.binance.com, data-api.binance.vision | the BTCUSDT symbol |
