@@ -306,7 +306,7 @@
                   },
                   {
                       "path":  "tools/install.ps1",
-                      "sha256":  "2fe81379e14c335069fc535d52bf33b4a12e9ecee0a3cd2354c77a324ff907c6"
+                      "sha256":  "7376976cf52b6ac161050c714e3c9b80e4b9e7dc66360df90bf4e85c06d06512"
                   },
                   {
                       "path":  "tools/intake.ps1",
@@ -318,7 +318,7 @@
                   },
                   {
                       "path":  "tools/restore.ps1",
-                      "sha256":  "9d73ad43f03968c79dbb24ada5eb9355011a9d19fd907e5ff88b168a2dd26c28"
+                      "sha256":  "b897722a634421a1c8a0bec2c2e38a8a19a570be7eb87c5118e05bfaa828f063"
                   },
                   {
                       "path":  "tools/strip-metadata.ps1",
@@ -430,7 +430,7 @@
                   },
                   {
                       "path":  "tests/privacy-scan.ps1",
-                      "sha256":  "57c698be1c02c2e0e27c7a48bfa72f055e7f00dbe056606fe439343bb9b6c467"
+                      "sha256":  "95c745bc6837f6403f531fb657d3a070e2dbb93f05a38f2bb1dd11afc9705183"
                   },
                   {
                       "path":  "tests/run-all.ps1",
@@ -446,7 +446,7 @@
                   },
                   {
                       "path":  "tests/site.test.mjs",
-                      "sha256":  "075c27bb139e9bf17bb617d102360705d0cd387ae1f090bbd86bf5d1a64bed9b"
+                      "sha256":  "6c6b44d855112416c849a7afa0eb85886903baf119da8286e1c9761a68dadd91"
                   }
               ]
 }

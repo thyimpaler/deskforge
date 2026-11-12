@@ -24,6 +24,8 @@ jobs:
           if ($r) { exit 1 }
       - name: Test suite (parse, schema, items, install and restore in a temp folder, privacy, no capture APIs, metadata)
         shell: powershell
+        env:
+          DESKFORGE_CI_ALLOW_ELEVATED: '1'
         run: .\tests\run-all.ps1 -Ci
       - name: Site tests
         run: node tests/site.test.mjs

@@ -24,7 +24,9 @@ Import-Module (Join-Path $PSScriptRoot 'lib\deskforge.psm1') -Force
 function Say([string]$level, [string]$text) { Write-Output ('{0,-5} {1}' -f $level, $text) }
 
 try {
-    if (Test-IsAdmin) { throw 'refusing to run as administrator. Open a normal PowerShell window and run it again.' }
+    # CI's Windows runner is an administrator. Its test job sets DESKFORGE_CI_ALLOW_ELEVATED=1 so the
+    # install and restore tests can run there; nothing else sets it, so a person running this is still refused.
+    if ((Test-IsAdmin) -and $env:DESKFORGE_CI_ALLOW_ELEVATED -ne '1') { throw 'refusing to run as administrator. Open a normal PowerShell window and run it again.' }
     $ctx = New-DeskContext -TestRoot $TestRoot
     if (-not (Test-Path $ctx.LogPath)) { throw "nothing to restore: $($ctx.LogPath) not found" }
     $rawLog = [IO.File]::ReadAllText($ctx.LogPath)

@@ -52,8 +52,10 @@ function Test-Text([string]$label, [string]$text) {
     $lines = $text -split "`n"
     for ($i = 0; $i -lt $lines.Length; $i++) {
         $line = $lines[$i]
+        # The public repo's own link is allowed: its owner handle is already public in that URL and in commit authors.
+        $scanLine = $line -replace 'https?://github\.com/[^/\s"<>]+/deskforge[^\s"<>)]*', ''
         foreach ($rule in ($generic + $secrets + $banned)) {
-            foreach ($m in [regex]::Matches($line, $rule.p)) {
+            foreach ($m in [regex]::Matches($scanLine, $rule.p)) {
                 if ($rule.n -eq 'email address') {
                     $ok = $false
                     foreach ($a in $allowEmail) { if ($m.Value.ToLower().EndsWith($a)) { $ok = $true } }
